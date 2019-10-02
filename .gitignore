@@ -9,8 +9,13 @@
 *.userosscache
 *.sln.docstates
 
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+.vscode
+.vscode/
+.idea
+.idea/
 
 # Build results
 [Dd]ebug/
