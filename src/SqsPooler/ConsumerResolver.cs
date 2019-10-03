@@ -1,14 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace SqsPooler
 {
-    internal interface IConsumerResolver
-    {
-        Task Resolve(string message, string messageType, CancellationToken cancellationToken);
-    }
-    
     internal class ConsumerResolver: IConsumerResolver
     {
         private readonly IEnumerable<IConsumer> _consumers;
@@ -18,9 +14,30 @@ namespace SqsPooler
             _consumers = consumers;
         }
 
-        public Task Resolve(string message, string messageType, CancellationToken cancellationToken)
+        public void Resolve(string message, string messageType, CancellationToken cancellationToken)
         {
-            return Task.CompletedTask;
+            foreach (var consumer in _consumers)
+            {
+                var type = consumer.GetType().GetInterfaces()
+                    .Where(x => x.IsGenericType)
+                    .Where(x => x.GetGenericTypeDefinition() == typeof(IConsumer<>))
+                    .Select(x => x.GetGenericArguments().Single())
+                    .FirstOrDefault(x => x.Name == messageType);
+                
+                if (type == null)
+                    continue;
+                
+                var deserializedMessage = JsonConvert.DeserializeObject(message, type);
+                var @params = new[]
+                {
+                    deserializedMessage,
+                    cancellationToken
+                };
+                consumer.GetType().GetMethod("Consume")?.Invoke(consumer, @params);
+                return;
+            }
+
+            throw new ConsumerNotFoundException(messageType);
         }
     }
 }
