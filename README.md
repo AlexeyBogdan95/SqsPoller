@@ -20,7 +20,7 @@ Create a message object and consumer that consumes the message
       public string Email {get; set; }
   }
   
-  public class SendBestRatesConsumer: IConsumer<DailyRatesPublished>
+  public class SendConfirmationMessageConsumer: IConsumer<UserCreated>
   {
       public Task Consume(DailyRatesPublished message, CancellationToken cancellationToken)
       {
