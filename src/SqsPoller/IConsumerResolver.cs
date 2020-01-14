@@ -1,6 +1,6 @@
 using System.Threading;
 
-namespace SqsPooler
+namespace SqsPoller
 {
     internal interface IConsumerResolver
     {

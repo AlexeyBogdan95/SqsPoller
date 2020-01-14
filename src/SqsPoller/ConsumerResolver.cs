@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
 
-namespace SqsPooler
+namespace SqsPoller
 {
     internal class ConsumerResolver: IConsumerResolver
     {

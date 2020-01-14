@@ -1,6 +1,6 @@
 using System;
 
-namespace SqsPooler
+namespace SqsPoller
 {
     public class ConsumerNotFoundException: Exception
     {

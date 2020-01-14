@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SqsPooler
+namespace SqsPoller
 {
     public class SqsPoolerConfig
     {

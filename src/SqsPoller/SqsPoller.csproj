@@ -1,14 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>SqsPooler</PackageId>
-        <Version>0.1.1</Version>
+        <PackageId>SqsPoller</PackageId>
+        <Version>0.1.2</Version>
         <Authors>Alexey Bogdan</Authors>
         <Company>Alexey Bogdan</Company>
         <Description>A small library that helps ASP.NET Core applications easily consume messages from a SQS queue</Description>
-        <RepositoryUrl>https://github.com/AlexeyBogdan95/SqsPooler</RepositoryUrl>
-        <PackageProjectUrl>https://www.nuget.org/packages/SqsPooler/</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/AlexeyBogdan95/SqsPoller</RepositoryUrl>
+        <PackageProjectUrl>https://www.nuget.org/packages/SqsPoller/</PackageProjectUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         
     </PropertyGroup>

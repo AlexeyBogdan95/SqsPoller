@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C3220A55-49E3-45CF-9394-308161C36AD8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPooler", "src\SqsPooler\SqsPooler.csproj", "{0BCF90D0-EDA6-4F37-9B3A-7A3B7CAC1297}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller", "src\SqsPoller\SqsPoller.csproj", "{0BCF90D0-EDA6-4F37-9B3A-7A3B7CAC1297}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

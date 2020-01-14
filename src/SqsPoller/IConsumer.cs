@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqsPooler
+namespace SqsPoller
 {
     /// <summary>
     /// It's used for IoC purposes only. Please don't use it

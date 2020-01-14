@@ -22,7 +22,7 @@ Create a message object and consumer that consumes the message
   
   public class SendConfirmationMessageConsumer: IConsumer<UserCreated>
   {
-      public Task Consume(DailyRatesPublished message, CancellationToken cancellationToken)
+      public Task Consume(UserCreated message, CancellationToken cancellationToken)
       {
           // Some code
       }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SqsPooler
+namespace SqsPoller
 {
     public class MessageBody
     {

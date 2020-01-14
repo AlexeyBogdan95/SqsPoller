@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace SqsPooler
+namespace SqsPoller
 {
     internal class SqsPoolerHostedService: BackgroundService
     {

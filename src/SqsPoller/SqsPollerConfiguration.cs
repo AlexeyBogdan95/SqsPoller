@@ -5,7 +5,7 @@ using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace SqsPooler
+namespace SqsPoller
 {
     public static class SqsPoolerConfiguration
     {
