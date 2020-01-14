@@ -18,16 +18,16 @@ namespace SqsPoller
         {
             foreach (var consumer in _consumers)
             {
-                var type = consumer.GetType().GetInterfaces()
-                    .Where(x => x.IsGenericType)
-                    .Where(x => x.GetGenericTypeDefinition() == typeof(IConsumer<>))
-                    .Select(x => x.GetGenericArguments().Single())
-                    .FirstOrDefault(x => x.Name == messageType);
+                var consumerType = consumer.GetType().GetInterfaces()
+                    .Where(type => type.IsGenericType)
+                    .Where(type => type.GetGenericTypeDefinition() == typeof(IConsumer<>))
+                    .Select(type => type.GetGenericArguments().Single())
+                    .FirstOrDefault(type => type.Name == messageType);
                 
-                if (type == null)
+                if (consumerType == null)
                     continue;
                 
-                var deserializedMessage = JsonConvert.DeserializeObject(message, type);
+                var deserializedMessage = JsonConvert.DeserializeObject(message, consumerType);
                 var @params = new[]
                 {
                     deserializedMessage,

@@ -7,9 +7,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace SqsPoller
 {
-    public static class SqsPoolerConfiguration
+    public static class SqsPollerConfiguration
     {
-        public static IServiceCollection AddSqsPooler(
+        public static IServiceCollection AddSqsPoller(
             this IServiceCollection services, SqsPoolerConfig config, Assembly[] assembliesWithConsumers)
         {
             services.AddSingleton(config);
@@ -19,7 +19,7 @@ namespace SqsPoller
                 RegionEndpoint = RegionEndpoint.GetBySystemName(config.Region)
             }));
 
-            services.AddTransient<IHostedService, SqsPoolerHostedService>();
+            services.AddTransient<IHostedService, SqsPollerHostedService>();
             
             var types = assembliesWithConsumers.SelectMany(x => x.GetTypes())
                 .Where(x => x.IsClass && typeof(IConsumer).IsAssignableFrom(x))

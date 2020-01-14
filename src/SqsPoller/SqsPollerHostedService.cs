@@ -11,18 +11,18 @@ using Newtonsoft.Json;
 
 namespace SqsPoller
 {
-    internal class SqsPoolerHostedService: BackgroundService
+    internal class SqsPollerHostedService: BackgroundService
     {
         private readonly AmazonSQSClient _amazonSqsClient;
         private readonly SqsPoolerConfig _config;
         private readonly IConsumerResolver _consumerResolver;
-        private readonly ILogger<SqsPoolerHostedService> _logger;
+        private readonly ILogger<SqsPollerHostedService> _logger;
 
-        public SqsPoolerHostedService(
+        public SqsPollerHostedService(
             AmazonSQSClient amazonSqsClient, 
             SqsPoolerConfig config, 
             IConsumerResolver consumerResolver,
-            ILogger<SqsPoolerHostedService> logger)
+            ILogger<SqsPollerHostedService> logger)
         {
             _amazonSqsClient = amazonSqsClient;
             _config = config;
@@ -45,7 +45,7 @@ namespace SqsPoller
                 ["correlation_id"] = Guid.NewGuid()
             }))
             {
-                _logger.LogDebug("Start pooling messages from a queue. correlation_id: {correlation_id}");
+                _logger.LogDebug("Start polling messages from a queue. correlation_id: {correlation_id}");
                 ReceiveMessageResponse receiveMessageResult = null;
                 try
                 {
