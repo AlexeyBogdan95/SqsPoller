@@ -4,9 +4,9 @@ A small library that helps ASP.NET Core applications easily consume messages fro
 
 # Example
 
-Register SqsPooler with `IServiceCollection`
+Register SqsPoller with `IServiceCollection`
 ```
-  services.AddSqsPooler(...);
+  services.AddSqsPoller(...);
 ```
 
 Create a message object and consumer that consumes the message
