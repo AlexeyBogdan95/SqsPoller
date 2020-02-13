@@ -14,7 +14,7 @@ namespace SqsPoller
         {
             services.AddSingleton(config);
             services.AddSingleton<IConsumerResolver, ConsumerResolver>();
-            services.AddSingleton(sc => CreateSqsConfig(config));
+            services.AddSingleton(sc => new AmazonSQSClient(CreateSqsConfig(config)));
 
             services.AddTransient<IHostedService, SqsPollerHostedService>();
             
