@@ -2,13 +2,17 @@ using System.Collections.Generic;
 
 namespace SqsPoller
 {
-    public class SqsPoolerConfig
+    public class SqsPollerConfig
     {
         public string Region { get; set; }
         
         public string ServiceUrl { get; set; }
         
         public string QueueUrl { get; set; }
+
+        public string AccessKey { get; set; }
+        
+        public string SecretKey { get; set; }
 
         /// <summary>
         /// Gets and sets the property WaitTimeSeconds (default 20).

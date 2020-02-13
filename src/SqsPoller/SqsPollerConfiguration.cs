@@ -3,21 +3,33 @@ using System.Reflection;
 using Amazon;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace SqsPoller
 {
     public static class SqsPollerConfiguration
     {
         public static IServiceCollection AddSqsPoller(
-            this IServiceCollection services, SqsPoolerConfig config, Assembly[] assembliesWithConsumers)
+            this IServiceCollection services,
+            SqsPollerConfig config,
+            params Assembly[] assembliesWithConsumers)
+        {
+            services.AddSqsPoller(config, new DefaultQueueUrlResolver(config), assembliesWithConsumers);
+            return services;
+        }
+
+        public static IServiceCollection AddSqsPoller(
+            this IServiceCollection services,
+            SqsPollerConfig config,
+            IQueueUrlResolver queueUrlResolver,
+            params Assembly[] assembliesWithConsumers)
         {
             services.AddSingleton(config);
             services.AddSingleton<IConsumerResolver, ConsumerResolver>();
-            services.AddSingleton(sc => new AmazonSQSClient(CreateSqsConfig(config)));
+            services.AddSingleton<IQueueUrlResolver>(queueUrlResolver);
+            services.AddSingleton<AmazonSQSClient>(sc => CreateClient(config));
+            services.AddSingleton<AmazonSqsService>();
+            services.AddHostedService<SqsPollerHostedService>();
 
-            services.AddTransient<IHostedService, SqsPollerHostedService>();
-            
             var types = assembliesWithConsumers.SelectMany(x => x.GetTypes())
                 .Where(x => x.IsClass && typeof(IConsumer).IsAssignableFrom(x))
                 .ToArray();
@@ -26,11 +38,11 @@ namespace SqsPoller
             {
                 services.AddSingleton(typeof(IConsumer), type);
             }
-            
+
             return services;
         }
 
-        private static AmazonSQSConfig CreateSqsConfig(SqsPoolerConfig config)
+        private static AmazonSQSClient CreateClient(SqsPollerConfig config)
         {
             var amazonSqsConfig = new AmazonSQSConfig()
             {
@@ -42,7 +54,9 @@ namespace SqsPoller
                 amazonSqsConfig.RegionEndpoint = RegionEndpoint.GetBySystemName(config.Region);
             }
 
-            return amazonSqsConfig;
+            return string.IsNullOrEmpty(config.AccessKey) || string.IsNullOrEmpty(config.SecretKey)
+                ? new AmazonSQSClient(amazonSqsConfig)
+                : new AmazonSQSClient(config.AccessKey, config.SecretKey, amazonSqsConfig);
         }
     }
 }
