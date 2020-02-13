@@ -14,12 +14,12 @@ namespace SqsPoller
         {
             services.AddSingleton(config);
             services.AddSingleton<IConsumerResolver, ConsumerResolver>();
-            services.AddSingleton(sc => new AmazonSQSClient(CreateSqsConfig(config)));
+            services.AddSingleton(provider => new AmazonSQSClient(CreateSqsConfig(config)));
 
             services.AddTransient<IHostedService, SqsPollerHostedService>();
             
-            var types = assembliesWithConsumers.SelectMany(x => x.GetTypes())
-                .Where(x => x.IsClass && typeof(IConsumer).IsAssignableFrom(x))
+            var types = assembliesWithConsumers.SelectMany(assembly => assembly.GetTypes())
+                .Where(type => type.IsClass && typeof(IConsumer).IsAssignableFrom(type))
                 .ToArray();
 
             foreach (var type in types)
@@ -32,9 +32,9 @@ namespace SqsPoller
 
         private static AmazonSQSConfig CreateSqsConfig(SqsPoolerConfig config)
         {
-            var amazonSqsConfig = new AmazonSQSConfig()
+            var amazonSqsConfig = new AmazonSQSConfig
             {
-                ServiceURL = config.ServiceUrl,
+                ServiceURL = config.ServiceUrl
             };
 
             if (!string.IsNullOrEmpty(config.Region))
