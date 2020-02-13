@@ -6,6 +6,8 @@ namespace SqsPoller
     {
         public string Region { get; set; }
         
+        public string ServiceUrl { get; set; }
+        
         public string QueueUrl { get; set; }
 
         /// <summary>
