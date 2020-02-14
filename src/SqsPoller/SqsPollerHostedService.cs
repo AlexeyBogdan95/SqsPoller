@@ -7,6 +7,7 @@ using Amazon.SQS.Model;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SqsPoller.Resolvers;
 
 namespace SqsPoller
 {

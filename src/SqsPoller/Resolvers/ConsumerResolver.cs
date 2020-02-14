@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
 
-namespace SqsPoller
+namespace SqsPoller.Resolvers
 {
-    internal class ConsumerResolver: IConsumerResolver
+    internal class ConsumerResolver : IConsumerResolver
     {
         private readonly IEnumerable<IConsumer> _consumers;
 
@@ -14,7 +15,12 @@ namespace SqsPoller
             _consumers = consumers;
         }
 
-        public void Resolve(string message, string messageType, CancellationToken cancellationToken)
+        public ConsumerResolver(IEnumerable<IConsumer> consumers, IEnumerable<Type> consumerTypes)
+        {
+            _consumers = consumers.Where(c => consumerTypes.Contains(c.GetType()));
+        }
+
+        public void Resolve(string message, string messageType, CancellationToken cancellationToken = default)
         {
             foreach (var consumer in _consumers)
             {

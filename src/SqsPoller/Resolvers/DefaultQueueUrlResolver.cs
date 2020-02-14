@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqsPoller
+namespace SqsPoller.Resolvers
 {
     public class DefaultQueueUrlResolver : IQueueUrlResolver
     {

@@ -15,6 +15,6 @@ namespace SqsPoller
     
     public interface IConsumer<in T>: IConsumer
     {
-        Task Consume(T message, CancellationToken cancellationToken);
+        Task Consume(T message, CancellationToken cancellationToken = default);
     }
 }

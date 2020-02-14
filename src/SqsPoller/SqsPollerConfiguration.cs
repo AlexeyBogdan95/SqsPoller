@@ -1,8 +1,13 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Amazon;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using SqsPoller.Resolvers;
 
 namespace SqsPoller
 {
@@ -13,7 +18,11 @@ namespace SqsPoller
             SqsPollerConfig config,
             params Assembly[] assembliesWithConsumers)
         {
-            services.AddSqsPoller(config, new DefaultQueueUrlResolver(config), assembliesWithConsumers);
+            var types = assembliesWithConsumers.SelectMany(x => x.GetTypes())
+                .Where(x => x.IsClass && typeof(IConsumer).IsAssignableFrom(x))
+                .ToArray();
+
+            services.AddSqsPoller(config, new DefaultQueueUrlResolver(config), types);
             return services;
         }
 
@@ -21,20 +30,22 @@ namespace SqsPoller
             this IServiceCollection services,
             SqsPollerConfig config,
             IQueueUrlResolver queueUrlResolver,
-            params Assembly[] assembliesWithConsumers)
+            params Type[] consumerTypes)
         {
             services.AddSingleton(config);
             services.AddSingleton<IConsumerResolver, ConsumerResolver>();
             services.AddSingleton<IQueueUrlResolver>(queueUrlResolver);
             services.AddSingleton<AmazonSQSClient>(sc => CreateClient(config));
             services.AddSingleton<AmazonSqsService>();
-            services.AddHostedService<SqsPollerHostedService>();
+            services.AddTransient<IHostedService, SqsPollerHostedService>(sc =>
+            {
+                var amazonSqsService = sc.GetRequiredService<AmazonSqsService>();
+                var consumerResolver = new ConsumerResolver(sc.GetRequiredService<IEnumerable<IConsumer>>(), consumerTypes);
+                var logger = sc.GetRequiredService<ILogger<SqsPollerHostedService>>();
+                return new SqsPollerHostedService(amazonSqsService, consumerResolver, logger);
+            });
 
-            var types = assembliesWithConsumers.SelectMany(x => x.GetTypes())
-                .Where(x => x.IsClass && typeof(IConsumer).IsAssignableFrom(x))
-                .ToArray();
-
-            foreach (var type in types)
+            foreach (var type in consumerTypes)
             {
                 services.AddSingleton(typeof(IConsumer), type);
             }

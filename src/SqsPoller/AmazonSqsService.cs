@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using Newtonsoft.Json;
+using SqsPoller.Resolvers;
 
 namespace SqsPoller
 {
