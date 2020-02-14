@@ -53,7 +53,7 @@ namespace SqsPoller
             return services;
         }
 
-        private static AmazonSQSClient CreateClient(SqsPollerConfig config)
+        internal static AmazonSQSClient CreateClient(SqsPollerConfig config)
         {
             var amazonSqsConfig = new AmazonSQSConfig()
             {

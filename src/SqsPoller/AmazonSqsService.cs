@@ -19,6 +19,11 @@ namespace SqsPoller
             _queueUrlResolver = queueUrlResolver;
             _amazonSqsClient = amazonSqs;
         }
+
+        public Task CreateQueueAsync(string queueName, CancellationToken cancellationToken = default)
+        {
+            return _amazonSqsClient.CreateQueueAsync(queueName, cancellationToken);
+        }
         
         public async Task PublishAsync<T>(T message, CancellationToken cancellationToken = default)
             where T : class, new()
