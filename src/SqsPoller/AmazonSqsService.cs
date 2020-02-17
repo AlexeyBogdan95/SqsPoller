@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
@@ -29,7 +30,21 @@ namespace SqsPoller
             where T : class, new()
         {
             var queueUrl = await _queueUrlResolver.Resolve(cancellationToken);
-            await _amazonSqsClient.SendMessageAsync(queueUrl, JsonConvert.SerializeObject(message), cancellationToken);
+            await _amazonSqsClient.SendMessageAsync(new SendMessageRequest()
+            {
+                QueueUrl = queueUrl,
+                MessageBody = JsonConvert.SerializeObject(message),
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {
+                        "MessageType", new MessageAttributeValue
+                        {
+                            DataType = "String",
+                            StringValue = message.GetType().FullName
+                        }
+                    }
+                }
+            }, cancellationToken);
         }
 
         public async Task<ReceiveMessageResponse> ReceiveMessageAsync(CancellationToken cancellationToken = default)

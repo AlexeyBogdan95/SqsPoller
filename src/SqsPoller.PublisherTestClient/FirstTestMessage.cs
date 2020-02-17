@@ -2,9 +2,9 @@
 
 namespace SqsPoller.PublisherTestClient
 {
-    public class Message
+    public class FirstTestMessage
     {
-        public string Body { get; set; }
+        public string FirstProperty { get; set; }
         public Dictionary<string, object> Arguments { get; set; }
     }
 }

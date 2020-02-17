@@ -7,3 +7,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 [assembly: InternalsVisibleTo("SqsPoller.UnitTests")]
 [assembly: InternalsVisibleTo("SqsPoller.PublisherTestClient")]
+[assembly: InternalsVisibleTo("SqsPoller.SubscriberTestClient")]

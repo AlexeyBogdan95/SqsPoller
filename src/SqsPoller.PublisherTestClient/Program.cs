@@ -12,7 +12,7 @@ namespace SqsPoller.PublisherTestClient
 {
     class Program
     {
-        private const string Queue = "TestClient";
+        private const string Queue = "TestQueue";
 
         static async Task Main(string[] args)
         {
@@ -50,19 +50,27 @@ namespace SqsPoller.PublisherTestClient
 
             while (key.Key != ConsoleKey.Escape)
             {
-                var message = new Message
+                if (char.IsLetter(key.KeyChar))
                 {
-                    Body = $"Test Message: {key.KeyChar.ToString()}",
-                    Arguments = new Dictionary<string, object>()
+                    await publisher.PublishAsync(new FirstTestMessage
                     {
-                        {"First", 1},
-                        {"Second", 2}
-                    }
-                };
-                
-                await publisher.PublishAsync(message);
+                        FirstProperty = $"Test Message: {key.KeyChar.ToString()}",
+                        Arguments = new Dictionary<string, object>()
+                        {
+                            {"First", 1},
+                            {"Second", 2}
+                        }
+                    });
+                }
+                else
+                {
+                    await publisher.PublishAsync(new SecondTestMessage
+                    {
+                        SecondProperty = $"Test Message: {key.KeyChar.ToString()}",
+                    });
+                }
 
-                Console.WriteLine("Please, press any button to sen message or ESCAPE to close application");
+                Console.WriteLine("Please, press any button to send message or ESCAPE to close application");
 
                 key = Console.ReadKey();
             }

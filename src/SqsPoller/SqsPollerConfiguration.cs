@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Amazon;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SqsPoller.Resolvers;
 
 namespace SqsPoller
@@ -21,21 +23,21 @@ namespace SqsPoller
             var types = assembliesWithConsumers.SelectMany(x => x.GetTypes())
                 .Where(x => x.IsClass && typeof(IConsumer).IsAssignableFrom(x))
                 .ToArray();
-
-            services.AddSqsPoller(config, new DefaultQueueUrlResolver(config), types);
+            
+            services.AddSqsPoller(sc => config, sc => new DefaultQueueUrlResolver(config), types);
             return services;
         }
 
         public static IServiceCollection AddSqsPoller(
             this IServiceCollection services,
-            SqsPollerConfig config,
-            IQueueUrlResolver queueUrlResolver,
-            params Type[] consumerTypes)
+            Func<IServiceProvider, SqsPollerConfig> configFactory,
+            Func<IServiceProvider, IQueueUrlResolver> queueUrlResolverFactory,
+            Type[] consumerTypes)
         {
-            services.AddSingleton(config);
+            services.AddSingleton<SqsPollerConfig>(configFactory);
             services.AddSingleton<IConsumerResolver, ConsumerResolver>();
-            services.AddSingleton<IQueueUrlResolver>(queueUrlResolver);
-            services.AddSingleton<AmazonSQSClient>(sc => CreateClient(config));
+            services.AddSingleton<IQueueUrlResolver>(queueUrlResolverFactory);
+            services.AddSingleton<IAmazonSQS>(sc => CreateClient(sc.GetRequiredService<IOptions<SqsPollerConfig>>().Value));
             services.AddSingleton<AmazonSqsService>();
             services.AddTransient<IHostedService, SqsPollerHostedService>(sc =>
             {

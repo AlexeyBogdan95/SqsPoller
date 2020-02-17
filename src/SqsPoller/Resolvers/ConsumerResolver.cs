@@ -28,7 +28,7 @@ namespace SqsPoller.Resolvers
                     .Where(type => type.IsGenericType)
                     .Where(type => type.GetGenericTypeDefinition() == typeof(IConsumer<>))
                     .Select(type => type.GetGenericArguments().Single())
-                    .FirstOrDefault(type => type.Name == messageType);
+                    .FirstOrDefault(type => type.FullName == messageType);
                 
                 if (consumerType == null)
                     continue;
