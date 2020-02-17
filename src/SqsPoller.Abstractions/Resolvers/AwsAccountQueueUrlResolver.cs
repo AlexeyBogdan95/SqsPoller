@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS;
 
-namespace SqsPoller.Resolvers
+namespace SqsPoller.Abstractions.Resolvers
 {
     public class AwsAccountQueueUrlResolver : IQueueUrlResolver
     {

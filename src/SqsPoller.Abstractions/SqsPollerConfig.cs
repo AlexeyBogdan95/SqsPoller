@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SqsPoller
+namespace SqsPoller.Abstractions
 {
     public class SqsPollerConfig
     {

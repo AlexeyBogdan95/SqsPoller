@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
+using SqsPoller.Abstractions;
 using SqsPoller.Resolvers;
 
 namespace SqsPoller.UnitTests
@@ -14,7 +15,7 @@ namespace SqsPoller.UnitTests
         {
             public string TestProperty { get; set; }
         }
-        
+
         public class SecondTestMessage
         {
             public string TestProperty { get; set; }
@@ -32,9 +33,11 @@ namespace SqsPoller.UnitTests
             
             var testMessage = new TestMessage() {TestProperty = "prop"};
 
-            resolver.Resolve(JsonConvert.SerializeObject(testMessage), nameof(TestMessage));
+            resolver.Resolve(JsonConvert.SerializeObject(testMessage), typeof(TestMessage).FullName);
 
             consumerMock.Verify(b => b.Consume(It.Is<TestMessage>(m => m.TestProperty == testMessage.TestProperty), It.IsAny<CancellationToken>()), Times.Once);
+
+            Assert.ThrowsException<ConsumerNotFoundException>(() => resolver.Resolve(JsonConvert.SerializeObject(testMessage), nameof(TestMessage)));
         }
              
         [TestMethod]
@@ -51,7 +54,7 @@ namespace SqsPoller.UnitTests
             
             var testMessage = new TestMessage() {TestProperty = "prop"};
 
-            resolver.Resolve(JsonConvert.SerializeObject(testMessage), nameof(TestMessage));
+            resolver.Resolve(JsonConvert.SerializeObject(testMessage), typeof(TestMessage).FullName);
 
             consumerMock.Verify(b => b.Consume(It.Is<TestMessage>(m => m.TestProperty == testMessage.TestProperty), It.IsAny<CancellationToken>()), Times.Once);
             secondConsumerMock.Verify(b => b.Consume(It.IsAny<SecondTestMessage>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -63,7 +66,7 @@ namespace SqsPoller.UnitTests
             var consumerMock = new Mock<IConsumer<TestMessage>>();
             consumerMock
                 .Setup(x => x.Consume(It.IsAny<TestMessage>(), It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(Task.FromResult(true)));
+                .Returns(() => Task.FromResult(true));
 
             var secondConsumerMock = new Mock<IConsumer<SecondTestMessage>>();
 
@@ -72,7 +75,7 @@ namespace SqsPoller.UnitTests
             
             var testMessage = new TestMessage() {TestProperty = "prop"};
 
-            Assert.ThrowsException<ConsumerNotFoundException>(() => resolver.Resolve(JsonConvert.SerializeObject(testMessage), nameof(TestMessage)));
+            Assert.ThrowsException<ConsumerNotFoundException>(() => resolver.Resolve(JsonConvert.SerializeObject(testMessage), typeof(TestMessage).FullName));
 
             consumerMock.Verify(b => b.Consume(It.Is<TestMessage>(m => m.TestProperty == testMessage.TestProperty), It.IsAny<CancellationToken>()), Times.Never);
             secondConsumerMock.Verify(b => b.Consume(It.IsAny<SecondTestMessage>(), It.IsAny<CancellationToken>()), Times.Never);

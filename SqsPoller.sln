@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C3220A55-49E3-45CF-9394-308161C36AD8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller", "src\SqsPoller\SqsPoller.csproj", "{0BCF90D0-EDA6-4F37-9B3A-7A3B7CAC1297}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller.UnitTests", "src\SqsPoller.UnitTests\SqsPoller.UnitTests.csproj", "{35256658-F35B-4ABF-A575-00E19698D007}"
@@ -10,16 +8,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller.PublisherTestClie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller.SubscriberTestClient", "src\SqsPoller.SubscriberTestClient\SqsPoller.SubscriberTestClient.csproj", "{A665135E-F88D-4C26-BC60-5F4A44232977}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller.Abstractions", "src\SqsPoller.Abstractions\SqsPoller.Abstractions.csproj", "{5EC8CE58-B005-46E3-9754-7ADACD028F02}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller.Publisher", "src\SqsPoller.Publisher\SqsPoller.Publisher.csproj", "{5FA9341F-B24F-4E22-AC5D-2F14533271F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller.Publisher.UnitTests", "src\SqsPoller.Publisher.UnitTests\SqsPoller.Publisher.UnitTests.csproj", "{8D4C2EFF-1136-4039-B403-C08CE883AB03}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{0BCF90D0-EDA6-4F37-9B3A-7A3B7CAC1297} = {C3220A55-49E3-45CF-9394-308161C36AD8}
-		{35256658-F35B-4ABF-A575-00E19698D007} = {C3220A55-49E3-45CF-9394-308161C36AD8}
-		{5F6AA796-6EE9-47C4-8A3A-ABF2ADD56CE8} = {C3220A55-49E3-45CF-9394-308161C36AD8}
-		{A665135E-F88D-4C26-BC60-5F4A44232977} = {C3220A55-49E3-45CF-9394-308161C36AD8}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0BCF90D0-EDA6-4F37-9B3A-7A3B7CAC1297}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -38,5 +38,17 @@ Global
 		{A665135E-F88D-4C26-BC60-5F4A44232977}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A665135E-F88D-4C26-BC60-5F4A44232977}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A665135E-F88D-4C26-BC60-5F4A44232977}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EC8CE58-B005-46E3-9754-7ADACD028F02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EC8CE58-B005-46E3-9754-7ADACD028F02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EC8CE58-B005-46E3-9754-7ADACD028F02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EC8CE58-B005-46E3-9754-7ADACD028F02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FA9341F-B24F-4E22-AC5D-2F14533271F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FA9341F-B24F-4E22-AC5D-2F14533271F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FA9341F-B24F-4E22-AC5D-2F14533271F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FA9341F-B24F-4E22-AC5D-2F14533271F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D4C2EFF-1136-4039-B403-C08CE883AB03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D4C2EFF-1136-4039-B403-C08CE883AB03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D4C2EFF-1136-4039-B403-C08CE883AB03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D4C2EFF-1136-4039-B403-C08CE883AB03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

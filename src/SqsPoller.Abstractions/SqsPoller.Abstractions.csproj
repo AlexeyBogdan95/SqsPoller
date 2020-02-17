@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AWSSDK.SQS" Version="3.3.102.12" />
+      <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
+    </ItemGroup>
+
+</Project>

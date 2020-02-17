@@ -6,7 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using SqsPoller.Resolvers;
+using SqsPoller.Abstractions;
+using SqsPoller.Abstractions.Resolvers;
 
 namespace SqsPoller.SubscriberTestClient
 {

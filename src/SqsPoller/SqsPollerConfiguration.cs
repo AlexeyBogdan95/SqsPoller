@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using Amazon;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SqsPoller.Abstractions;
+using SqsPoller.Abstractions.Extensions;
+using SqsPoller.Abstractions.Resolvers;
 using SqsPoller.Resolvers;
 
 namespace SqsPoller
@@ -24,7 +25,7 @@ namespace SqsPoller
                 .Where(x => x.IsClass && typeof(IConsumer).IsAssignableFrom(x))
                 .ToArray();
             
-            services.AddSqsPoller(sc => config, sc => new DefaultQueueUrlResolver(config), types);
+            services.AddSqsPoller(sc => config, sc => new DefaultQueueUrlResolver(Options.Create(config)), types);
             return services;
         }
 
@@ -37,7 +38,11 @@ namespace SqsPoller
             services.AddSingleton<SqsPollerConfig>(configFactory);
             services.AddSingleton<IConsumerResolver, ConsumerResolver>();
             services.AddSingleton<IQueueUrlResolver>(queueUrlResolverFactory);
-            services.AddSingleton<IAmazonSQS>(sc => CreateClient(sc.GetRequiredService<IOptions<SqsPollerConfig>>().Value));
+            services.AddSingleton<IAmazonSQS>(sc =>
+            {
+                var config = sc.GetRequiredService<IOptions<SqsPollerConfig>>();
+                return config.Value.CreateClient();
+            });
             services.AddSingleton<AmazonSqsService>();
             services.AddTransient<IHostedService, SqsPollerHostedService>(sc =>
             {
@@ -53,23 +58,6 @@ namespace SqsPoller
             }
 
             return services;
-        }
-
-        internal static AmazonSQSClient CreateClient(SqsPollerConfig config)
-        {
-            var amazonSqsConfig = new AmazonSQSConfig()
-            {
-                ServiceURL = config.ServiceUrl,
-            };
-
-            if (!string.IsNullOrEmpty(config.Region))
-            {
-                amazonSqsConfig.RegionEndpoint = RegionEndpoint.GetBySystemName(config.Region);
-            }
-
-            return string.IsNullOrEmpty(config.AccessKey) || string.IsNullOrEmpty(config.SecretKey)
-                ? new AmazonSQSClient(amazonSqsConfig)
-                : new AmazonSQSClient(config.AccessKey, config.SecretKey, amazonSqsConfig);
         }
     }
 }

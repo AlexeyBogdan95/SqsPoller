@@ -5,7 +5,7 @@ using Amazon.SQS.Model;
 using FizzWare.NBuilder;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqsPoller.Resolvers;
+using SqsPoller.Abstractions.Resolvers;
 
 namespace SqsPoller.UnitTests
 {

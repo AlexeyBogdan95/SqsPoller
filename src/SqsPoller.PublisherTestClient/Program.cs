@@ -6,7 +6,10 @@ using Amazon.SQS;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using SqsPoller.Resolvers;
+using SqsPoller.Abstractions;
+using SqsPoller.Abstractions.Extensions;
+using SqsPoller.Abstractions.Resolvers;
+using SqsPoller.Publisher;
 
 namespace SqsPoller.PublisherTestClient
 {
@@ -27,21 +30,17 @@ namespace SqsPoller.PublisherTestClient
             serviceCollection.AddSingleton<IAmazonSQS>(sc =>
             {
                 var config = sc.GetRequiredService<IOptions<SqsPollerConfig>>();
-                return SqsPollerConfiguration.CreateClient(config.Value);
+                return config.Value.CreateClient();
             });
             serviceCollection.AddSingleton<IQueueUrlResolver>(sc => new AwsAccountQueueUrlResolver(sc.GetRequiredService<IAmazonSQS>(), Queue));
-            serviceCollection.AddSingleton(sc =>
-            {
-                var config = sc.GetRequiredService<IOptions<SqsPollerConfig>>();
-                return new AmazonSqsService(config.Value, sc.GetRequiredService<IAmazonSQS>(),
-                    sc.GetRequiredService<IQueueUrlResolver>());
-            });
+            serviceCollection.AddSingleton<AmazonSqsPublisher>();
             
             var provider = serviceCollection.BuildServiceProvider();
 
-            var publisher = provider.GetRequiredService<AmazonSqsService>();
+            var sqsClient = provider.GetRequiredService<IAmazonSQS>();
+            await sqsClient.CreateQueueAsync(Queue);
 
-            await publisher.CreateQueueAsync(Queue);
+            var sqsPublisher = provider.GetRequiredService<AmazonSqsPublisher>();
 
             Console.WriteLine("Publisher test client");
             Console.WriteLine("Please, press any button to send message or press ESCAPE to close application");
@@ -52,7 +51,7 @@ namespace SqsPoller.PublisherTestClient
             {
                 if (char.IsLetter(key.KeyChar))
                 {
-                    await publisher.PublishAsync(new FirstTestMessage
+                    await sqsPublisher.PublishAsync(new FirstTestMessage
                     {
                         FirstProperty = $"Test Message: {key.KeyChar.ToString()}",
                         Arguments = new Dictionary<string, object>()
@@ -64,7 +63,7 @@ namespace SqsPoller.PublisherTestClient
                 }
                 else
                 {
-                    await publisher.PublishAsync(new SecondTestMessage
+                    await sqsPublisher.PublishAsync(new SecondTestMessage
                     {
                         SecondProperty = $"Test Message: {key.KeyChar.ToString()}",
                     });

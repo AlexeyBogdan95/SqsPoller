@@ -3,8 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using SqsPoller.Resolvers;
+using SqsPoller.Abstractions;
+using SqsPoller.Abstractions.Resolvers;
 
 namespace SqsPoller
 {
@@ -14,43 +16,18 @@ namespace SqsPoller
         private readonly SqsPollerConfig _sqsPollerConfig;
         private readonly IQueueUrlResolver _queueUrlResolver;
 
-        public AmazonSqsService(SqsPollerConfig sqsPollerConfig, IAmazonSQS amazonSqs, IQueueUrlResolver queueUrlResolver)
+        public AmazonSqsService(IOptions<SqsPollerConfig> sqsPollerConfig, IAmazonSQS amazonSqs,
+            IQueueUrlResolver queueUrlResolver)
         {
-            _sqsPollerConfig = sqsPollerConfig;
+            _sqsPollerConfig = sqsPollerConfig.Value;
             _queueUrlResolver = queueUrlResolver;
             _amazonSqsClient = amazonSqs;
-        }
-
-        public Task CreateQueueAsync(string queueName, CancellationToken cancellationToken = default)
-        {
-            return _amazonSqsClient.CreateQueueAsync(queueName, cancellationToken);
-        }
-        
-        public async Task PublishAsync<T>(T message, CancellationToken cancellationToken = default)
-            where T : class, new()
-        {
-            var queueUrl = await _queueUrlResolver.Resolve(cancellationToken);
-            await _amazonSqsClient.SendMessageAsync(new SendMessageRequest()
-            {
-                QueueUrl = queueUrl,
-                MessageBody = JsonConvert.SerializeObject(message),
-                MessageAttributes = new Dictionary<string, MessageAttributeValue>
-                {
-                    {
-                        "MessageType", new MessageAttributeValue
-                        {
-                            DataType = "String",
-                            StringValue = message.GetType().FullName
-                        }
-                    }
-                }
-            }, cancellationToken);
         }
 
         public async Task<ReceiveMessageResponse> ReceiveMessageAsync(CancellationToken cancellationToken = default)
         {
             var queueUrl = await _queueUrlResolver.Resolve(cancellationToken);
-            
+
             var receiveMessageRequest = new ReceiveMessageRequest
             {
                 WaitTimeSeconds = _sqsPollerConfig.WaitTimeSeconds,

@@ -7,6 +7,7 @@ using Amazon.SQS.Model;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SqsPoller.Abstractions;
 using SqsPoller.Resolvers;
 
 namespace SqsPoller
@@ -62,7 +63,7 @@ namespace SqsPoller
                     try
                     {
                         var messageType = msg.MessageAttributes
-                            .FirstOrDefault(x => x.Key == "MessageType").Value?.StringValue;
+                            .FirstOrDefault(x => x.Key == Constants.MessageType).Value?.StringValue;
 
                         using (_logger.BeginScope(new Dictionary<string, object>
                         {
@@ -77,8 +78,7 @@ namespace SqsPoller
                             else
                             {
                                 var body = JsonConvert.DeserializeObject<MessageBody>(msg.Body);
-                                messageType = body.MessageAttributes
-                                    .FirstOrDefault(x => x.Key == "MessageType").Value.Value;
+                                messageType = body.MessageAttributes.FirstOrDefault(x => x.Key == Constants.MessageType).Value.Value;
                                 _logger.LogDebug("Message Type is {message_type}");
                                 _consumerResolver.Resolve(body.Message, messageType, cancellationToken);
                             }

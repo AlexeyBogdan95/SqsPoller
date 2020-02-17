@@ -1,15 +1,16 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
-namespace SqsPoller.Resolvers
+namespace SqsPoller.Abstractions.Resolvers
 {
     public class DefaultQueueUrlResolver : IQueueUrlResolver
     {
         private readonly SqsPollerConfig _sqsPollerConfig;
 
-        public DefaultQueueUrlResolver(SqsPollerConfig sqsPollerConfig)
+        public DefaultQueueUrlResolver(IOptions<SqsPollerConfig> sqsPollerConfig)
         {
-            _sqsPollerConfig = sqsPollerConfig;
+            _sqsPollerConfig = sqsPollerConfig.Value;
         }
         
         public Task<string> Resolve(CancellationToken cancellationToken = default)
