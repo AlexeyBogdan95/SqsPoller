@@ -14,16 +14,16 @@ namespace SqsPoller
 {
     internal class SqsPollerHostedService : BackgroundService
     {
-        private readonly AmazonSqsService _amazonSqsService;
+        private readonly AmazonSqsReciever _amazonSqsReciever;
         private readonly IConsumerResolver _consumerResolver;
         private readonly ILogger<SqsPollerHostedService> _logger;
 
         public SqsPollerHostedService(
-            AmazonSqsService amazonSqsService,
+            AmazonSqsReciever amazonSqsReciever,
             IConsumerResolver consumerResolver,
             ILogger<SqsPollerHostedService> logger)
         {
-            _amazonSqsService = amazonSqsService;
+            _amazonSqsReciever = amazonSqsReciever;
             _consumerResolver = consumerResolver;
             _logger = logger;
         }
@@ -47,7 +47,7 @@ namespace SqsPoller
                 ReceiveMessageResponse receiveMessageResult;
                 try
                 {
-                    receiveMessageResult = await _amazonSqsService.ReceiveMessageAsync(cancellationToken);
+                    receiveMessageResult = await _amazonSqsReciever.ReceiveMessageAsync(cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -85,7 +85,7 @@ namespace SqsPoller
                         }
 
                         _logger.LogDebug("Deleting the message {message_id}", msg.ReceiptHandle);
-                        await _amazonSqsService.DeleteMessageAsync(msg.ReceiptHandle, cancellationToken);
+                        await _amazonSqsReciever.DeleteMessageAsync(msg.ReceiptHandle, cancellationToken);
 
                         _logger.LogDebug(
                             "The message {message_id} has been deleted successfully",

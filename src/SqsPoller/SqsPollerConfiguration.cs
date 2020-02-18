@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -35,21 +36,20 @@ namespace SqsPoller
             Func<IServiceProvider, IQueueUrlResolver> queueUrlResolverFactory,
             Type[] consumerTypes)
         {
-            services.AddSingleton<SqsPollerConfig>(configFactory);
-            services.AddSingleton<IConsumerResolver, ConsumerResolver>();
-            services.AddSingleton<IQueueUrlResolver>(queueUrlResolverFactory);
-            services.AddSingleton<IAmazonSQS>(sc =>
+            services.TryAddSingleton<SqsPollerConfig>(configFactory);
+            services.TryAddSingleton<IConsumerResolver, ConsumerResolver>();
+            services.TryAddSingleton<IAmazonSQS>(sc =>
             {
                 var config = sc.GetRequiredService<IOptions<SqsPollerConfig>>();
                 return config.Value.CreateClient();
             });
-            services.AddSingleton<AmazonSqsService>();
             services.AddTransient<IHostedService, SqsPollerHostedService>(sc =>
             {
-                var amazonSqsService = sc.GetRequiredService<AmazonSqsService>();
+                var config = sc.GetRequiredService<IOptions<SqsPollerConfig>>();
+                var amazonSqsReciever = new AmazonSqsReciever(config, sc.GetRequiredService<IAmazonSQS>(), queueUrlResolverFactory(sc));
                 var consumerResolver = new ConsumerResolver(sc.GetRequiredService<IEnumerable<IConsumer>>(), consumerTypes);
                 var logger = sc.GetRequiredService<ILogger<SqsPollerHostedService>>();
-                return new SqsPollerHostedService(amazonSqsService, consumerResolver, logger);
+                return new SqsPollerHostedService(amazonSqsReciever, consumerResolver, logger);
             });
 
             foreach (var type in consumerTypes)

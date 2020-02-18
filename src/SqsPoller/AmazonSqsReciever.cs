@@ -4,20 +4,18 @@ using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using SqsPoller.Abstractions;
 using SqsPoller.Abstractions.Resolvers;
 
 namespace SqsPoller
 {
-    public class AmazonSqsService
+    internal class AmazonSqsReciever
     {
         private readonly IAmazonSQS _amazonSqsClient;
         private readonly SqsPollerConfig _sqsPollerConfig;
         private readonly IQueueUrlResolver _queueUrlResolver;
 
-        public AmazonSqsService(IOptions<SqsPollerConfig> sqsPollerConfig, IAmazonSQS amazonSqs,
-            IQueueUrlResolver queueUrlResolver)
+        public AmazonSqsReciever(IOptions<SqsPollerConfig> sqsPollerConfig, IAmazonSQS amazonSqs, IQueueUrlResolver queueUrlResolver)
         {
             _sqsPollerConfig = sqsPollerConfig.Value;
             _queueUrlResolver = queueUrlResolver;

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Amazon.SQS;
@@ -13,8 +15,6 @@ namespace SqsPoller.SubscriberTestClient
 {
     class Program
     {
-        private const string Queue = "TestQueue";
-
         static async Task Main()
         {
             IHostBuilder hostBuilder = new HostBuilder()
@@ -37,25 +37,23 @@ namespace SqsPoller.SubscriberTestClient
 
                     services.AddSqsPoller(
                         sc => sc.GetRequiredService<IOptions<SqsPollerConfig>>().Value,
-                        sc => new AwsAccountQueueUrlResolver(sc.GetRequiredService<IAmazonSQS>(), Queue),
+                        sc => new AwsAccountQueueUrlResolver(sc.GetRequiredService<IAmazonSQS>(), PublisherTestClient.Program.FirstQueue),
                         new [] {typeof(FirstTestConsumer)}
                     );
                     
                     services.AddSqsPoller(
                         sc => sc.GetRequiredService<IOptions<SqsPollerConfig>>().Value,
-                        sc => new AwsAccountQueueUrlResolver(sc.GetRequiredService<IAmazonSQS>(), Queue),
+                        sc => new AwsAccountQueueUrlResolver(sc.GetRequiredService<IAmazonSQS>(), PublisherTestClient.Program.SecondQueue),
                         new [] {typeof(SecondTestConsumer)}
                     );
-
-                    // services.AddSqsPoller(
-                    //     sc => sc.GetRequiredService<IOptions<SqsPollerConfig>>().Value,
-                    //     sc => new AwsAccountQueueUrlResolver(sc.GetRequiredService<IAmazonSQS>(), Queue),
-                    //     new [] {typeof(FirstTestConsumer), typeof(SecondTestConsumer)}
-                    // );
                 })
                 .UseConsoleLifetime();
             
-            await hostBuilder.RunConsoleAsync();
+            var host = hostBuilder.UseConsoleLifetime().Build();
+            var hostedServices = host.Services.GetRequiredService<IEnumerable<IHostedService>>();
+            await host.RunAsync();
+                
+            //await hostBuilder.RunConsoleAsync();
         }
     }
 }

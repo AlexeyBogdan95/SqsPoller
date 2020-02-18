@@ -12,16 +12,11 @@ using SqsPoller.Abstractions.Resolvers;
 namespace SqsPoller.UnitTests
 {
     [TestClass]
-    public class AmazonSqsServiceTests
+    public class AmazonSqsRecieverTests
     {
         private const string QueueName = "queue";
         private string QueueUrl => $"https://sqs.us-east-1.amazonaws.com/exampleaccoundid/queueu/{QueueName}";
         
-        private class TestMessage
-        {
-            public string TestProperty { get; set; }
-        }
-
         [TestMethod]
         public async Task TestReceiveMessageAsync()
         {
@@ -31,7 +26,7 @@ namespace SqsPoller.UnitTests
                 .Setup(x => x.ReceiveMessageAsync(It.IsAny<ReceiveMessageRequest>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(CreateReceiveMessageResponse()));
 
-            var service = new AmazonSqsService(config, sqsMock.Object, new DefaultQueueUrlResolver(config));
+            var service = new AmazonSqsReciever(config, sqsMock.Object, new DefaultQueueUrlResolver(config));
 
             await service.ReceiveMessageAsync();
 
@@ -49,7 +44,7 @@ namespace SqsPoller.UnitTests
                 .Setup(x => x.ReceiveMessageAsync(It.IsAny<ReceiveMessageRequest>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(CreateReceiveMessageResponse()));
 
-            var service = new AmazonSqsService(Options.Create(new SqsPollerConfig()), sqsMock.Object, new AwsAccountQueueUrlResolver(sqsMock.Object, QueueName));
+            var service = new AmazonSqsReciever(Options.Create(new SqsPollerConfig()), sqsMock.Object, new AwsAccountQueueUrlResolver(sqsMock.Object, QueueName));
 
             await service.ReceiveMessageAsync();
 
