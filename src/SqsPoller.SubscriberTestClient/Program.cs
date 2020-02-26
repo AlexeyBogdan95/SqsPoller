@@ -32,7 +32,6 @@ namespace SqsPoller.SubscriberTestClient
                 {
                     var sqsSection = context.Configuration.GetSection("SQS");
                     services.Configure<SqsPollerConfig>(sqsSection);
-                    services.AddSingleton<AwsAccountQueueUrlResolver>();
                     services.AddNamedSqsPollerConfig(PublisherTestClient.Program.FirstQueue, sqsSection);
                     services.AddNamedSqsPollerConfig(PublisherTestClient.Program.SecondQueue, sqsSection);
 
