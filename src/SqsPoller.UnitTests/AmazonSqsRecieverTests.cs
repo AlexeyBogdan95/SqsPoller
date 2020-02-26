@@ -20,43 +20,17 @@ namespace SqsPoller.UnitTests
         [TestMethod]
         public async Task TestReceiveMessageAsync()
         {
-            var config = Options.Create(new SqsPollerConfig() {QueueUrl = QueueUrl});
+            var config = new SqsPollerConfig() {QueueUrl = QueueUrl};
             var sqsMock = new Mock<IAmazonSQS>();
             sqsMock
                 .Setup(x => x.ReceiveMessageAsync(It.IsAny<ReceiveMessageRequest>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(CreateReceiveMessageResponse()));
 
-            var service = new AmazonSqsReciever(config, sqsMock.Object, new DefaultQueueUrlResolver(config));
+            var service = new AmazonSqsReciever(config, sqsMock.Object);
 
             await service.ReceiveMessageAsync();
 
             sqsMock.Verify(b => b.ReceiveMessageAsync(It.Is<ReceiveMessageRequest>(r => r.QueueUrl == QueueUrl), It.IsAny<CancellationToken>()));
-        }
-
-        [TestMethod]
-        public async Task TestReceiveMessageWithAwsAccountUrlAsync()
-        {
-            var sqsMock = new Mock<IAmazonSQS>();
-            sqsMock
-                .Setup(x => x.GetQueueUrlAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(CreateQueueUrlResponse()));
-            sqsMock
-                .Setup(x => x.ReceiveMessageAsync(It.IsAny<ReceiveMessageRequest>(), It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(CreateReceiveMessageResponse()));
-
-            var service = new AmazonSqsReciever(Options.Create(new SqsPollerConfig()), sqsMock.Object, new AwsAccountQueueUrlResolver(sqsMock.Object, QueueName));
-
-            await service.ReceiveMessageAsync();
-
-            sqsMock.Verify(b => b.ReceiveMessageAsync(It.Is<ReceiveMessageRequest>(r => r.QueueUrl == QueueUrl), It.IsAny<CancellationToken>()));
-        }
-        
-        private GetQueueUrlResponse CreateQueueUrlResponse()
-        {
-            return Builder<GetQueueUrlResponse>
-                .CreateNew()
-                .With(it => it.QueueUrl = QueueUrl)
-                .Build();
         }
         
         private ReceiveMessageResponse CreateReceiveMessageResponse()

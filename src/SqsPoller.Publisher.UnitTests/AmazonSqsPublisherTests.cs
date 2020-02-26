@@ -27,10 +27,10 @@ namespace SqsPoller.Publisher.UnitTests
         {
             var config = Options.Create(new SqsPollerConfig() {QueueUrl = QueueUrl});
             var sqsMock = new Mock<IAmazonSQS>();
-            var service = new AmazonSqsPublisher(sqsMock.Object, new DefaultQueueUrlResolver(config));
+            var service = new AmazonSqsPublisher(sqsMock.Object);
             var testMessage = new TestMessage() {TestProperty = "prop"};
             
-            await service.PublishAsync(testMessage);
+            await service.PublishAsync(QueueUrl, testMessage);
 
             sqsMock.Verify(b => b.SendMessageAsync(
                 It.Is<SendMessageRequest>(r => r.QueueUrl == QueueUrl && r.MessageBody == "{\"TestProperty\":\"prop\"}"
@@ -46,10 +46,12 @@ namespace SqsPoller.Publisher.UnitTests
                 .Setup(x => x.GetQueueUrlAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(CreateQueueUrlResponse()));
 
-            var service = new AmazonSqsPublisher(sqsMock.Object, new AwsAccountQueueUrlResolver(sqsMock.Object, QueueName));
+            var service = new AmazonSqsPublisher(sqsMock.Object);
             var testMessage = new TestMessage() {TestProperty = "prop"};
 
-            await service.PublishAsync(testMessage);
+            var resolver = new AwsAccountQueueUrlResolver(sqsMock.Object);
+            var queueName = await resolver.Resolve(QueueName);
+            await service.PublishAsync(queueName, testMessage);
 
             sqsMock.Verify(b => b.SendMessageAsync(
                 It.Is<SendMessageRequest>(r => r.QueueUrl == QueueUrl && r.MessageBody == "{\"TestProperty\":\"prop\"}"

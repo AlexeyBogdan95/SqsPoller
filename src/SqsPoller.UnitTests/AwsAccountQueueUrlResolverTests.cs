@@ -23,11 +23,11 @@ namespace SqsPoller.UnitTests
                 .Setup(x => x.GetQueueUrlAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(CreateQueueUrlResponse()));
 
-            var resolver = new AwsAccountQueueUrlResolver(sqsMock.Object, QueueName);
+            var resolver = new AwsAccountQueueUrlResolver(sqsMock.Object);
 
-            Assert.AreEqual(QueueUrl, await resolver.Resolve());
-            Assert.AreEqual(QueueUrl, await resolver.Resolve());
-            Assert.AreEqual(QueueUrl, await resolver.Resolve());
+            Assert.AreEqual(QueueUrl, await resolver.Resolve(QueueName));
+            Assert.AreEqual(QueueUrl, await resolver.Resolve(QueueName));
+            Assert.AreEqual(QueueUrl, await resolver.Resolve(QueueName));
             
             sqsMock.Verify(b => b.GetQueueUrlAsync(QueueName, It.IsAny<CancellationToken>()), Times.Once);
         }
