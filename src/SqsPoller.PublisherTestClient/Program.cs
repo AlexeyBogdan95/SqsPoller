@@ -34,6 +34,7 @@ namespace SqsPoller.PublisherTestClient
                 return config.Value.CreateClient();
             });
             serviceCollection.AddTransient<AmazonSqsPublisher>();
+            serviceCollection.AddSingleton<AwsAccountQueueUrlResolver>();
             
             var provider = serviceCollection.BuildServiceProvider();
 
@@ -41,8 +42,8 @@ namespace SqsPoller.PublisherTestClient
             await sqsClient.CreateQueueAsync(FirstQueue);
             await sqsClient.CreateQueueAsync(SecondQueue);
 
-            var firstQueuePublisher = new AmazonSqsPublisher(sqsClient, new AwsAccountQueueUrlResolver(sqsClient, FirstQueue));
-            var secondQueuePublisher = new AmazonSqsPublisher(sqsClient, new AwsAccountQueueUrlResolver(sqsClient, SecondQueue));
+            var queueUrlResolver = provider.GetRequiredService<AwsAccountQueueUrlResolver>();
+            var sqsPublisher = provider.GetRequiredService<AmazonSqsPublisher>();
 
             Console.WriteLine("Publisher test client");
             Console.WriteLine("Please, press any button to send message or press ESCAPE to close application");
@@ -53,7 +54,8 @@ namespace SqsPoller.PublisherTestClient
             {
                 if (char.IsLetter(key.KeyChar))
                 {
-                    await firstQueuePublisher.PublishAsync(new FirstTestMessage
+                    var firstQueueUrl = await queueUrlResolver.Resolve(FirstQueue);
+                    await sqsPublisher.PublishAsync(firstQueueUrl, new FirstTestMessage
                     {
                         FirstProperty = $"Test Message: {key.KeyChar.ToString()}",
                         Arguments = new Dictionary<string, object>()
@@ -65,7 +67,8 @@ namespace SqsPoller.PublisherTestClient
                 }
                 else
                 {
-                    await secondQueuePublisher.PublishAsync(new SecondTestMessage
+                    var secondQueueUrl = await queueUrlResolver.Resolve(SecondQueue);
+                    await sqsPublisher.PublishAsync(secondQueueUrl, new SecondTestMessage
                     {
                         SecondProperty = $"Test Message: {key.KeyChar.ToString()}",
                     });

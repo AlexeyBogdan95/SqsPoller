@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Amazon.SQS;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using SqsPoller.Abstractions;
+using SqsPoller.Abstractions.Extensions;
 using SqsPoller.Abstractions.Resolvers;
 
 namespace SqsPoller.SubscriberTestClient
@@ -32,28 +30,25 @@ namespace SqsPoller.SubscriberTestClient
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddOptions();
-                    services.Configure<SqsPollerConfig>(context.Configuration.GetSection("SQS"));
+                    var sqsSection = context.Configuration.GetSection("SQS");
+                    services.Configure<SqsPollerConfig>(sqsSection);
+                    services.AddSingleton<AwsAccountQueueUrlResolver>();
+                    services.AddNamedSqsPollerConfig(PublisherTestClient.Program.FirstQueue, sqsSection);
+                    services.AddNamedSqsPollerConfig(PublisherTestClient.Program.SecondQueue, sqsSection);
 
                     services.AddSqsPoller(
-                        sc => sc.GetRequiredService<IOptions<SqsPollerConfig>>().Value,
-                        sc => new AwsAccountQueueUrlResolver(sc.GetRequiredService<IAmazonSQS>(), PublisherTestClient.Program.FirstQueue),
+                        sc => sc.GetService<IOptionsSnapshot<SqsPollerConfig>>().Get(PublisherTestClient.Program.FirstQueue),
                         new [] {typeof(FirstTestConsumer)}
                     );
                     
                     services.AddSqsPoller(
-                        sc => sc.GetRequiredService<IOptions<SqsPollerConfig>>().Value,
-                        sc => new AwsAccountQueueUrlResolver(sc.GetRequiredService<IAmazonSQS>(), PublisherTestClient.Program.SecondQueue),
+                        sc => sc.GetService<IOptionsSnapshot<SqsPollerConfig>>().Get(PublisherTestClient.Program.SecondQueue),
                         new [] {typeof(SecondTestConsumer)}
                     );
                 })
                 .UseConsoleLifetime();
-            
-            var host = hostBuilder.UseConsoleLifetime().Build();
-            var hostedServices = host.Services.GetRequiredService<IEnumerable<IHostedService>>();
-            await host.RunAsync();
-                
-            //await hostBuilder.RunConsoleAsync();
+
+            await hostBuilder.RunConsoleAsync();
         }
     }
 }

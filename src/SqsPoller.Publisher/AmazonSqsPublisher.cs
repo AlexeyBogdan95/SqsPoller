@@ -5,25 +5,21 @@ using Amazon.SQS;
 using Amazon.SQS.Model;
 using Newtonsoft.Json;
 using SqsPoller.Abstractions;
-using SqsPoller.Abstractions.Resolvers;
 
 namespace SqsPoller.Publisher
 {
     public class AmazonSqsPublisher
     {
         private readonly IAmazonSQS _amazonSqsClient;
-        private readonly IQueueUrlResolver _queueUrlResolver;
 
-        public AmazonSqsPublisher(IAmazonSQS amazonSqs, IQueueUrlResolver queueUrlResolver)
+        public AmazonSqsPublisher(IAmazonSQS amazonSqs)
         {
-            _queueUrlResolver = queueUrlResolver;
             _amazonSqsClient = amazonSqs;
         }
 
-        public async Task PublishAsync<T>(T message, CancellationToken cancellationToken = default)
+        public async Task PublishAsync<T>(string queueUrl, T message, CancellationToken cancellationToken = default)
             where T : class, new()
         {
-            var queueUrl = await _queueUrlResolver.Resolve(cancellationToken);
             await _amazonSqsClient.SendMessageAsync(new SendMessageRequest()
             {
                 QueueUrl = queueUrl,

@@ -5,43 +5,36 @@ using Amazon.SQS;
 
 namespace SqsPoller.Abstractions.Resolvers
 {
-    public class AwsAccountQueueUrlResolver : IQueueUrlResolver
+    public class AwsAccountQueueUrlResolver
     {
         private readonly IAmazonSQS _amazonSqsClient;
-        private readonly string _queueName;
 
         private string BaseUrl { get; set; }
 
-        public AwsAccountQueueUrlResolver(IAmazonSQS amazonSqsClient, string queueName)
+        public AwsAccountQueueUrlResolver(IAmazonSQS amazonSqsClient)
         {
             _amazonSqsClient = amazonSqsClient;
-            _queueName = queueName;
         }
 
-        public async Task<string> Resolve(CancellationToken cancellationToken = default)
+        public async Task<string> Resolve(string queueName, CancellationToken cancellationToken = default)
         {
             // Prefered way of making SQS queue URLs - no Amazon SQS Requests fees for GetQueueUrl/CreateQueue requests
             if (!string.IsNullOrEmpty(BaseUrl))
             {
-                var uri = new Uri(new Uri(BaseUrl), _queueName);
+                var uri = new Uri(new Uri(BaseUrl), queueName);
                 return uri.AbsoluteUri;
             }
 
-            var queueUrlResponse = await _amazonSqsClient.GetQueueUrlAsync(_queueName, cancellationToken);
-            BaseUrl = RemoveFromEnd(queueUrlResponse.QueueUrl, _queueName);
+            var queueUrlResponse = await _amazonSqsClient.GetQueueUrlAsync(queueName, cancellationToken);
+            BaseUrl = RemoveFromEnd(queueUrlResponse.QueueUrl, queueName);
             return queueUrlResponse.QueueUrl;
         }
         
         private string RemoveFromEnd(string queueUrl, string queueName)
         {
-            if (queueUrl.EndsWith(queueName))
-            {
-                return queueUrl.Substring(0, queueUrl.Length - queueName.Length);
-            }
-            else
-            {
-                return queueUrl;
-            }
+            return queueUrl.EndsWith(queueName)
+                ? queueUrl.Substring(0, queueUrl.Length - queueName.Length)
+                : queueUrl;
         }
     }
 }

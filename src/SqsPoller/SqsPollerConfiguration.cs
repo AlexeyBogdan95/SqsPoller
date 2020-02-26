@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Amazon.SQS;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -10,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SqsPoller.Abstractions;
 using SqsPoller.Abstractions.Extensions;
-using SqsPoller.Abstractions.Resolvers;
 using SqsPoller.Resolvers;
 
 namespace SqsPoller
@@ -26,14 +26,13 @@ namespace SqsPoller
                 .Where(x => x.IsClass && typeof(IConsumer).IsAssignableFrom(x))
                 .ToArray();
             
-            services.AddSqsPoller(sc => config, sc => new DefaultQueueUrlResolver(Options.Create(config)), types);
+            services.AddSqsPoller(sc => config, types);
             return services;
         }
 
         public static IServiceCollection AddSqsPoller(
             this IServiceCollection services,
             Func<IServiceProvider, SqsPollerConfig> configFactory,
-            Func<IServiceProvider, IQueueUrlResolver> queueUrlResolverFactory,
             Type[] consumerTypes)
         {
             services.TryAddSingleton<SqsPollerConfig>(configFactory);
@@ -45,8 +44,8 @@ namespace SqsPoller
             });
             services.AddTransient<IHostedService, SqsPollerHostedService>(sc =>
             {
-                var config = sc.GetRequiredService<IOptions<SqsPollerConfig>>();
-                var amazonSqsReciever = new AmazonSqsReciever(config, sc.GetRequiredService<IAmazonSQS>(), queueUrlResolverFactory(sc));
+                var config = configFactory(sc);
+                var amazonSqsReciever = new AmazonSqsReciever(config, sc.GetRequiredService<IAmazonSQS>());
                 var consumerResolver = new ConsumerResolver(sc.GetRequiredService<IEnumerable<IConsumer>>(), consumerTypes);
                 var logger = sc.GetRequiredService<ILogger<SqsPollerHostedService>>();
                 return new SqsPollerHostedService(amazonSqsReciever, consumerResolver, logger);

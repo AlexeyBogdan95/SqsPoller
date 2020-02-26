@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
-using Microsoft.Extensions.Options;
 using SqsPoller.Abstractions;
-using SqsPoller.Abstractions.Resolvers;
 
 namespace SqsPoller
 {
@@ -13,25 +10,21 @@ namespace SqsPoller
     {
         private readonly IAmazonSQS _amazonSqsClient;
         private readonly SqsPollerConfig _sqsPollerConfig;
-        private readonly IQueueUrlResolver _queueUrlResolver;
 
-        public AmazonSqsReciever(IOptions<SqsPollerConfig> sqsPollerConfig, IAmazonSQS amazonSqs, IQueueUrlResolver queueUrlResolver)
+        public AmazonSqsReciever(SqsPollerConfig sqsPollerConfig, IAmazonSQS amazonSqs)
         {
-            _sqsPollerConfig = sqsPollerConfig.Value;
-            _queueUrlResolver = queueUrlResolver;
+            _sqsPollerConfig = sqsPollerConfig;
             _amazonSqsClient = amazonSqs;
         }
 
         public async Task<ReceiveMessageResponse> ReceiveMessageAsync(CancellationToken cancellationToken = default)
         {
-            var queueUrl = await _queueUrlResolver.Resolve(cancellationToken);
-
             var receiveMessageRequest = new ReceiveMessageRequest
             {
+                QueueUrl = _sqsPollerConfig.QueueUrl,
                 WaitTimeSeconds = _sqsPollerConfig.WaitTimeSeconds,
                 MaxNumberOfMessages = _sqsPollerConfig.MaxNumberOfMessages,
                 MessageAttributeNames = _sqsPollerConfig.MessageAttributeNames,
-                QueueUrl = queueUrl
             };
 
             return await _amazonSqsClient.ReceiveMessageAsync(receiveMessageRequest, cancellationToken);
@@ -39,10 +32,9 @@ namespace SqsPoller
 
         public async Task DeleteMessageAsync(string receiptHandle, CancellationToken cancellationToken = default)
         {
-            var queueUrl = await _queueUrlResolver.Resolve(cancellationToken);
             await _amazonSqsClient.DeleteMessageAsync(new DeleteMessageRequest
             {
-                QueueUrl = queueUrl,
+                QueueUrl = _sqsPollerConfig.QueueUrl,
                 ReceiptHandle = receiptHandle
             }, cancellationToken);
         }
