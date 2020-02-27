@@ -36,14 +36,12 @@ namespace SqsPoller.SubscriberTestClient
                     services.AddNamedSqsPoller(
                         PublisherTestClient.Program.FirstQueue,
                         sqsSection,
-                        sc => sc.GetService<IOptionsSnapshot<SqsPollerConfig>>().Get(PublisherTestClient.Program.FirstQueue),
                         new [] {typeof(FirstTestConsumer)}
                     );
                     
                     services.AddNamedSqsPoller(
                         PublisherTestClient.Program.SecondQueue,
                         sqsSection,
-                        sc => sc.GetService<IOptionsSnapshot<SqsPollerConfig>>().Get(PublisherTestClient.Program.SecondQueue),
                         new [] {typeof(SecondTestConsumer)}
                     );
                 })
