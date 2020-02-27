@@ -66,7 +66,7 @@ namespace SqsPoller
             Func<IServiceProvider, SqsPollerConfig> configFactory,
             Type[] consumerTypes)
         {
-            services.ConfigureNamedSqsPollerConfig(queueName, sqsSection);
+            services.ConfigureNamedConfig(queueName, sqsSection);
 
             services.AddSqsPoller(
                 configFactory,
