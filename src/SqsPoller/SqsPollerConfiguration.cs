@@ -58,5 +58,22 @@ namespace SqsPoller
 
             return services;
         }
+
+        public static IServiceCollection AddNamedSqsPoller(
+            this IServiceCollection services,
+            string queueName,
+            IConfigurationSection sqsSection,
+            Func<IServiceProvider, SqsPollerConfig> configFactory,
+            Type[] consumerTypes)
+        {
+            services.ConfigureNamedSqsPollerConfig(queueName, sqsSection);
+
+            services.AddSqsPoller(
+                configFactory,
+                consumerTypes
+            );
+
+            return services;
+        }
     }
 }

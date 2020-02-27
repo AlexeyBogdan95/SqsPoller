@@ -7,7 +7,7 @@ namespace SqsPoller.Abstractions.Extensions
 {
     public static class OptionsServiceCollectionExtensions
     {
-        public static IServiceCollection AddNamedSqsPollerConfig(this IServiceCollection services, string name, IConfigurationSection sqsSection)
+        public static IServiceCollection ConfigureNamedSqsPollerConfig(this IServiceCollection services, string name, IConfigurationSection sqsSection)
         {
             services.AddSingleton<AwsAccountQueueUrlResolver>();
 

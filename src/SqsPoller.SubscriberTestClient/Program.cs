@@ -32,15 +32,17 @@ namespace SqsPoller.SubscriberTestClient
                 {
                     var sqsSection = context.Configuration.GetSection("SQS");
                     services.Configure<SqsPollerConfig>(sqsSection);
-                    services.AddNamedSqsPollerConfig(PublisherTestClient.Program.FirstQueue, sqsSection);
-                    services.AddNamedSqsPollerConfig(PublisherTestClient.Program.SecondQueue, sqsSection);
 
-                    services.AddSqsPoller(
+                    services.AddNamedSqsPoller(
+                        PublisherTestClient.Program.FirstQueue,
+                        sqsSection,
                         sc => sc.GetService<IOptionsSnapshot<SqsPollerConfig>>().Get(PublisherTestClient.Program.FirstQueue),
                         new [] {typeof(FirstTestConsumer)}
                     );
                     
-                    services.AddSqsPoller(
+                    services.AddNamedSqsPoller(
+                        PublisherTestClient.Program.SecondQueue,
+                        sqsSection,
                         sc => sc.GetService<IOptionsSnapshot<SqsPollerConfig>>().Get(PublisherTestClient.Program.SecondQueue),
                         new [] {typeof(SecondTestConsumer)}
                     );
