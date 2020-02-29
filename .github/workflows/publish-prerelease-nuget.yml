@@ -1,0 +1,31 @@
+name: Publish prerelease Nuget
+
+on: 
+  push:
+    branches:
+      dev
+
+jobs:
+  build:
+    name: 
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Remove all packages
+        run: rm ./src/SqsPoller/bin/Release/*.nupkg
+        shell: bash
+        
+      - name: Build with dotnet
+        run: dotnet build --configuration Release --version-suffix -prerelease-$(date +%Y%m%d%H%M%S)
+        shell: bash
+
+      - name: Publish nuget
+        run: |
+          for nugetPackage in ./[repository]/bin/Release/*.nupkg
+          do
+            dotnet nuget nugetPackage -k oy2mgzjo62rb3ctp2kbah4lppabszm4e3fl2yzoz7hbpyq -s https://api.nuget.org/v3/index.json
+          done
+        shell: bash
