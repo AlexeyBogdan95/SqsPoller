@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Check current directoty
-        run: ls -l
+        run: ls -R
         shell: bash
 
       - name: Remove all packages
