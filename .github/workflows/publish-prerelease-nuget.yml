@@ -19,7 +19,7 @@ jobs:
         shell: bash
         
       - name: Build with dotnet
-        run: dotnet build --configuration Release --version-suffix prerelease-$(date +%Y%m%d%H%M%S)
+        run: dotnet build --configuration Release --version-suffix -prerelease-$(date +%Y%m%d%H%M%S)
         shell: bash
 
       - name: Publish nuget
