@@ -14,6 +14,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v1
 
+      - name: Check current directoty
+        run: ls -l
+        shell: bash
+
       - name: Remove all packages
         run: rm ./src/SqsPoller/bin/Release/*.nupkg
         shell: bash
