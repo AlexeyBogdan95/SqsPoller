@@ -1,7 +1,7 @@
-name: Publish prerelease Nuget
+name: Publish Nuget pre-release package
 
 on: 
-  push:
+  pull_request:
     branches:
       dev
 
@@ -13,23 +13,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
-
-      - name: Check current directoty
-        run: ls -R
-        shell: bash
-
-      - name: Remove all packages
-        run: rm ./src/SqsPoller/bin/Release/*.nupkg
-        shell: bash
         
-      - name: Build with dotnet
+      - name: Build
         run: dotnet build --configuration Release --version-suffix -prerelease-$(date +%Y%m%d%H%M%S)
         shell: bash
 
-      - name: Publish nuget
-        run: |
-          for nugetPackage in ./[repository]/bin/Release/*.nupkg
-          do
-            dotnet nuget nugetPackage -k oy2mgzjo62rb3ctp2kbah4lppabszm4e3fl2yzoz7hbpyq -s https://api.nuget.org/v3/index.json
-          done
+      - name: Publish Nuget pre-release package
+        run: dotnet nuget push src/SqsPoller/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k oy2mgzjo62rb3ctp2kbah4lppabszm4e3fl2yzoz7hbpyq -s https://api.nuget.org/v3/index.json
         shell: bash
