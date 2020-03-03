@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS;
+using Amazon.SQS.Model;
 
 namespace SqsPoller.Abstractions.Resolvers
 {
@@ -16,7 +17,7 @@ namespace SqsPoller.Abstractions.Resolvers
             _amazonSqsClient = amazonSqsClient;
         }
 
-        public async Task<string> Resolve(string queueName, CancellationToken cancellationToken = default)
+        public async Task<string> Resolve(string queueName, string queueOwnerAwsAccountId = default, CancellationToken cancellationToken = default)
         {
             // Prefered way of making SQS queue URLs - no Amazon SQS Requests fees for GetQueueUrl/CreateQueue requests
             if (!string.IsNullOrEmpty(BaseUrl))
@@ -25,7 +26,13 @@ namespace SqsPoller.Abstractions.Resolvers
                 return uri.AbsoluteUri;
             }
 
-            var queueUrlResponse = await _amazonSqsClient.GetQueueUrlAsync(queueName, cancellationToken);
+            var request = new GetQueueUrlRequest()
+            {
+                QueueName = queueName,
+                QueueOwnerAWSAccountId = queueOwnerAwsAccountId
+            };
+            
+            var queueUrlResponse = await _amazonSqsClient.GetQueueUrlAsync(request, cancellationToken);
             BaseUrl = RemoveFromEnd(queueUrlResponse.QueueUrl, queueName);
             return queueUrlResponse.QueueUrl;
         }

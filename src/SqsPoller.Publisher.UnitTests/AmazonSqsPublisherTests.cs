@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using FizzWare.NBuilder;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SqsPoller.Abstractions;
@@ -25,7 +24,6 @@ namespace SqsPoller.Publisher.UnitTests
         [TestMethod]
         public async Task TestPublishAsync()
         {
-            var config = Options.Create(new SqsPollerConfig() {QueueUrl = QueueUrl});
             var sqsMock = new Mock<IAmazonSQS>();
             var service = new AmazonSqsPublisher(sqsMock.Object);
             var testMessage = new TestMessage() {TestProperty = "prop"};

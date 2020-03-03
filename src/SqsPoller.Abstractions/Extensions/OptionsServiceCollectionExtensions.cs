@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SqsPoller.Abstractions.Resolvers;
 
@@ -11,12 +10,13 @@ namespace SqsPoller.Abstractions.Extensions
         {
             services.AddSingleton<AwsAccountQueueUrlResolver>();
 
-            services.AddOptions<SqsPollerConfig>(name).Configure<IServiceProvider>((config, sc) =>
-            {
-                sqsSection.Bind(config);
-                var resolver = sc.GetRequiredService<AwsAccountQueueUrlResolver>();
-                config.QueueUrl = resolver.Resolve(name).GetAwaiter().GetResult();
-            });
+            services
+                .AddOptions<SqsPollerConfig>(name)
+                .Configure<AwsAccountQueueUrlResolver>((config, resolver) =>
+                {
+                    sqsSection.Bind(config);
+                    config.QueueUrl = resolver.Resolve(name).GetAwaiter().GetResult();
+                });
             
             return services;
         }
