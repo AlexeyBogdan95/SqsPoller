@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,7 +15,7 @@ namespace SqsPoller
             _consumers = consumers;
         }
 
-        public void Resolve(string message, string messageType, CancellationToken cancellationToken)
+        public async Task Resolve(string message, string messageType, CancellationToken cancellationToken)
         {
             foreach (var consumer in _consumers)
             {
@@ -35,12 +34,8 @@ namespace SqsPoller
                     deserializedMessage,
                     cancellationToken
                 };
-                if (consumer.GetType().GetMethod("Consume")?.Invoke(consumer, @params) is Task response 
-                    && response.IsFaulted && response.Exception != null)
-                {
-                    throw response.Exception;
-                }
                 
+                await (Task) consumer.GetType().GetMethod("Consume")?.Invoke(consumer, @params);
                 return;
             }
 
