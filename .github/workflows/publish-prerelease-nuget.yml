@@ -17,7 +17,7 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --version-suffix -prerelease-$(date +%Y%m%d%H%M%S)
         shell: bash
-
+        
       - name: Publish Nuget pre-release package
-        run: dotnet nuget push src/SqsPoller/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k oy2mgzjo62rb3ctp2kbah4lppabszm4e3fl2yzoz7hbpyq -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push src/SqsPoller/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k $(cat nuget-apikey) -s https://api.nuget.org/v3/index.json
         shell: bash

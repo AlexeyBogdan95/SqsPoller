@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace SqsPoller
@@ -33,7 +35,12 @@ namespace SqsPoller
                     deserializedMessage,
                     cancellationToken
                 };
-                consumer.GetType().GetMethod("Consume")?.Invoke(consumer, @params);
+                if (consumer.GetType().GetMethod("Consume")?.Invoke(consumer, @params) is Task response 
+                    && response.IsFaulted && response.Exception != null)
+                {
+                    throw response.Exception;
+                }
+                
                 return;
             }
 
