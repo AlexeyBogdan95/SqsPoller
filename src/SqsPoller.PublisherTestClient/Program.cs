@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using SqsPoller.Abstractions;
 using SqsPoller.Abstractions.Extensions;
 using SqsPoller.Abstractions.Resolvers;
-using SqsPoller.Publisher;
 
 namespace SqsPoller.PublisherTestClient
 {
@@ -33,7 +32,6 @@ namespace SqsPoller.PublisherTestClient
                 var config = sc.GetRequiredService<IOptions<SqsPollerConfig>>();
                 return config.Value.CreateClient();
             });
-            serviceCollection.AddTransient<AmazonSqsPublisher>();
             serviceCollection.AddSingleton<AwsAccountQueueUrlResolver>();
             
             var provider = serviceCollection.BuildServiceProvider();
@@ -43,7 +41,7 @@ namespace SqsPoller.PublisherTestClient
             await sqsClient.CreateQueueAsync(SecondQueue);
 
             var queueUrlResolver = provider.GetRequiredService<AwsAccountQueueUrlResolver>();
-            var sqsPublisher = provider.GetRequiredService<AmazonSqsPublisher>();
+            var amazonSqsClient = provider.GetRequiredService<IAmazonSQS>();
 
             Console.WriteLine("Publisher test client");
             Console.WriteLine("Please, press any button to send message or press ESCAPE to close application");
@@ -55,7 +53,7 @@ namespace SqsPoller.PublisherTestClient
                 if (char.IsLetter(key.KeyChar))
                 {
                     var firstQueueUrl = await queueUrlResolver.Resolve(FirstQueue);
-                    await sqsPublisher.PublishAsync(firstQueueUrl, new FirstTestMessage
+                    await amazonSqsClient.PublishAsync(firstQueueUrl, new FirstTestMessage
                     {
                         FirstProperty = $"Test Message: {key.KeyChar.ToString()}",
                         Arguments = new Dictionary<string, object>()
@@ -68,7 +66,7 @@ namespace SqsPoller.PublisherTestClient
                 else
                 {
                     var secondQueueUrl = await queueUrlResolver.Resolve(SecondQueue);
-                    await sqsPublisher.PublishAsync(secondQueueUrl, new SecondTestMessage
+                    await amazonSqsClient.PublishAsync(secondQueueUrl, new SecondTestMessage
                     {
                         SecondProperty = $"Test Message: {key.KeyChar.ToString()}",
                     });

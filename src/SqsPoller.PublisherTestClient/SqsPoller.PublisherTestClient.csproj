@@ -21,7 +21,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SqsPoller.Abstractions\SqsPoller.Abstractions.csproj" />
-      <ProjectReference Include="..\SqsPoller.Publisher\SqsPoller.Publisher.csproj" />
     </ItemGroup>
 
 </Project>
