@@ -10,10 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller.SubscriberTestCli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller.Abstractions", "src\SqsPoller.Abstractions\SqsPoller.Abstractions.csproj", "{5EC8CE58-B005-46E3-9754-7ADACD028F02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller.Publisher", "src\SqsPoller.Publisher\SqsPoller.Publisher.csproj", "{5FA9341F-B24F-4E22-AC5D-2F14533271F9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqsPoller.Publisher.UnitTests", "src\SqsPoller.Publisher.UnitTests\SqsPoller.Publisher.UnitTests.csproj", "{8D4C2EFF-1136-4039-B403-C08CE883AB03}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,13 +38,5 @@ Global
 		{5EC8CE58-B005-46E3-9754-7ADACD028F02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5EC8CE58-B005-46E3-9754-7ADACD028F02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5EC8CE58-B005-46E3-9754-7ADACD028F02}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5FA9341F-B24F-4E22-AC5D-2F14533271F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5FA9341F-B24F-4E22-AC5D-2F14533271F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5FA9341F-B24F-4E22-AC5D-2F14533271F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5FA9341F-B24F-4E22-AC5D-2F14533271F9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8D4C2EFF-1136-4039-B403-C08CE883AB03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D4C2EFF-1136-4039-B403-C08CE883AB03}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8D4C2EFF-1136-4039-B403-C08CE883AB03}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D4C2EFF-1136-4039-B403-C08CE883AB03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
