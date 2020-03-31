@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace SqsPoller
@@ -14,7 +15,7 @@ namespace SqsPoller
             _consumers = consumers;
         }
 
-        public void Resolve(string message, string messageType, CancellationToken cancellationToken)
+        public async Task Resolve(string message, string messageType, CancellationToken cancellationToken)
         {
             foreach (var consumer in _consumers)
             {
@@ -33,7 +34,8 @@ namespace SqsPoller
                     deserializedMessage,
                     cancellationToken
                 };
-                consumer.GetType().GetMethod("Consume")?.Invoke(consumer, @params);
+                
+                await (Task) consumer.GetType().GetMethod("Consume")?.Invoke(consumer, @params);
                 return;
             }
 
