@@ -19,5 +19,5 @@ jobs:
         shell: bash
 
       - name: Publish Nuget pre-release package
-        run: dotnet nuget push src/SqsPoller.Abstractions/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k $(cat sqspoller-abstractions-nuget-apikey) -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push src/SqsPoller.Abstractions/bin/Release/SqsPoller.Abstractions.*.*.*-prerelease-*.nupkg -k $(cat sqspoller-abstractions-nuget-apikey) -s https://api.nuget.org/v3/index.json
         shell: bash
