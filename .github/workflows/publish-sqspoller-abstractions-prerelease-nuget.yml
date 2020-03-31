@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Build
-        run: dotnet build --source ./src/SqsPoller.Abstractions --configuration Release --version-suffix -prerelease-$(date +%Y%m%d%H%M%S)
+        run: dotnet build --configuration Release --version-suffix -prerelease-$(date +%Y%m%d%H%M%S)
         shell: bash
 
       - name: Publish Nuget pre-release package
