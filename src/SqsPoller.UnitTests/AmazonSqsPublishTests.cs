@@ -41,7 +41,7 @@ namespace SqsPoller.UnitTests
         {
             var sqsMock = new Mock<IAmazonSQS>();
             sqsMock
-                .Setup(x => x.GetQueueUrlAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetQueueUrlAsync(It.IsAny<GetQueueUrlRequest>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(CreateQueueUrlResponse()));
 
             var testMessage = new TestMessage() {TestProperty = "prop"};
