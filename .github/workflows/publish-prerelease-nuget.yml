@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       dev
+      AlexeyBogdan95:dev
 
 jobs:
   build:
