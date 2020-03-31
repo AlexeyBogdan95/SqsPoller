@@ -1,9 +1,10 @@
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqsPoller.Resolvers
 {
     internal interface IConsumerResolver
     {
-        void Resolve(string message, string messageType, CancellationToken cancellationToken = default);
+        Task Resolve(string message, string messageType, CancellationToken cancellationToken = default);
     }
 }

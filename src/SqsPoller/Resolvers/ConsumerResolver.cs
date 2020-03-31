@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SqsPoller.Abstractions;
 
@@ -21,7 +22,7 @@ namespace SqsPoller.Resolvers
             _consumers = consumers.Where(c => consumerTypes.Contains(c.GetType()));
         }
 
-        public void Resolve(string message, string messageType, CancellationToken cancellationToken = default)
+        public async Task Resolve(string message, string messageType, CancellationToken cancellationToken = default)
         {
             foreach (var consumer in _consumers)
             {
@@ -40,7 +41,8 @@ namespace SqsPoller.Resolvers
                     deserializedMessage,
                     cancellationToken
                 };
-                consumer.GetType().GetMethod("Consume")?.Invoke(consumer, @params);
+                
+                await (Task) consumer.GetType().GetMethod("Consume")?.Invoke(consumer, @params);
                 return;
             }
 

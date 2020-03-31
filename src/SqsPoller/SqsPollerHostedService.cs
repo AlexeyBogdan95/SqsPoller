@@ -73,14 +73,14 @@ namespace SqsPoller
                             if (messageType != null)
                             {
                                 _logger.LogDebug("Message Type is {message_type}");
-                                _consumerResolver.Resolve(msg.Body, messageType, cancellationToken);
+                                await _consumerResolver.Resolve(msg.Body, messageType, cancellationToken);
                             }
                             else
                             {
                                 var body = JsonConvert.DeserializeObject<MessageBody>(msg.Body);
                                 messageType = body.MessageAttributes.FirstOrDefault(x => x.Key == Constants.MessageType).Value.Value;
                                 _logger.LogDebug("Message Type is {message_type}");
-                                _consumerResolver.Resolve(body.Message, messageType, cancellationToken);
+                                await _consumerResolver.Resolve(body.Message, messageType, cancellationToken);
                             }
                         }
 
