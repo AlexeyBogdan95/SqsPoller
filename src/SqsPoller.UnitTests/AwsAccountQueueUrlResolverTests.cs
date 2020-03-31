@@ -20,7 +20,7 @@ namespace SqsPoller.UnitTests
         {
             var sqsMock = new Mock<IAmazonSQS>();
             sqsMock
-                .Setup(x => x.GetQueueUrlAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetQueueUrlAsync(It.IsAny<GetQueueUrlRequest>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(CreateQueueUrlResponse()));
 
             var resolver = new AwsAccountQueueUrlResolver(sqsMock.Object);
@@ -29,7 +29,7 @@ namespace SqsPoller.UnitTests
             Assert.AreEqual(QueueUrl, await resolver.Resolve(QueueName));
             Assert.AreEqual(QueueUrl, await resolver.Resolve(QueueName));
             
-            sqsMock.Verify(b => b.GetQueueUrlAsync(QueueName, It.IsAny<CancellationToken>()), Times.Once);
+            sqsMock.Verify(b => b.GetQueueUrlAsync(It.Is<GetQueueUrlRequest>(x => x.QueueName == QueueName), It.IsAny<CancellationToken>()), Times.Once);
         }
         
         private GetQueueUrlResponse CreateQueueUrlResponse()

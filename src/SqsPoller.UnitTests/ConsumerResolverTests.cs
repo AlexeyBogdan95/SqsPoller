@@ -22,7 +22,7 @@ namespace SqsPoller.UnitTests
         }
         
         [TestMethod]
-        public void TestResolve()
+        public async Task TestResolve()
         {
             var consumerMock = new Mock<IConsumer<TestMessage>>();
             consumerMock
@@ -33,15 +33,15 @@ namespace SqsPoller.UnitTests
             
             var testMessage = new TestMessage() {TestProperty = "prop"};
 
-            resolver.Resolve(JsonConvert.SerializeObject(testMessage), typeof(TestMessage).FullName);
+            await resolver.Resolve(JsonConvert.SerializeObject(testMessage), typeof(TestMessage).FullName);
 
             consumerMock.Verify(b => b.Consume(It.Is<TestMessage>(m => m.TestProperty == testMessage.TestProperty), It.IsAny<CancellationToken>()), Times.Once);
 
-            Assert.ThrowsException<ConsumerNotFoundException>(() => resolver.Resolve(JsonConvert.SerializeObject(testMessage), nameof(TestMessage)));
+            await Assert.ThrowsExceptionAsync<ConsumerNotFoundException>(() => resolver.Resolve(JsonConvert.SerializeObject(testMessage), nameof(TestMessage)));
         }
              
         [TestMethod]
-        public void TestResolveOneConsumerOnly()
+        public async Task TestResolveOneConsumerOnly()
         {
             var consumerMock = new Mock<IConsumer<TestMessage>>();
             consumerMock
@@ -54,14 +54,14 @@ namespace SqsPoller.UnitTests
             
             var testMessage = new TestMessage() {TestProperty = "prop"};
 
-            resolver.Resolve(JsonConvert.SerializeObject(testMessage), typeof(TestMessage).FullName);
+            await resolver.Resolve(JsonConvert.SerializeObject(testMessage), typeof(TestMessage).FullName);
 
             consumerMock.Verify(b => b.Consume(It.Is<TestMessage>(m => m.TestProperty == testMessage.TestProperty), It.IsAny<CancellationToken>()), Times.Once);
             secondConsumerMock.Verify(b => b.Consume(It.IsAny<SecondTestMessage>(), It.IsAny<CancellationToken>()), Times.Never);
         }
              
         [TestMethod]
-        public void TestResolveWithSpecifiedConsumers()
+        public async Task TestResolveWithSpecifiedConsumers()
         {
             var consumerMock = new Mock<IConsumer<TestMessage>>();
             consumerMock
@@ -75,7 +75,7 @@ namespace SqsPoller.UnitTests
             
             var testMessage = new TestMessage() {TestProperty = "prop"};
 
-            Assert.ThrowsException<ConsumerNotFoundException>(() => resolver.Resolve(JsonConvert.SerializeObject(testMessage), typeof(TestMessage).FullName));
+            await Assert.ThrowsExceptionAsync<ConsumerNotFoundException>(() => resolver.Resolve(JsonConvert.SerializeObject(testMessage), typeof(TestMessage).FullName));
 
             consumerMock.Verify(b => b.Consume(It.Is<TestMessage>(m => m.TestProperty == testMessage.TestProperty), It.IsAny<CancellationToken>()), Times.Never);
             secondConsumerMock.Verify(b => b.Consume(It.IsAny<SecondTestMessage>(), It.IsAny<CancellationToken>()), Times.Never);
