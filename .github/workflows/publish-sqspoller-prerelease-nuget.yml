@@ -1,4 +1,4 @@
-name: Publish Nuget pre-release package
+name: Publish SqsPoller Nuget pre-release package
 
 on: 
   pull_request:
@@ -19,5 +19,5 @@ jobs:
         shell: bash
         
       - name: Publish Nuget pre-release package
-        run: dotnet nuget push src/SqsPoller/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k $(cat nuget-apikey) -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push src/SqsPoller/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k $(cat sqspoller-nuget-apikey) -s https://api.nuget.org/v3/index.json
         shell: bash

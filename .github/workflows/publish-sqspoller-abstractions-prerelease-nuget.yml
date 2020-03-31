@@ -1,0 +1,23 @@
+name: Publish SqsPoller.Abstractions Nuget pre-release package
+
+on:
+  pull_request:
+    branches:
+      master
+
+jobs:
+  build:
+    name:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Build
+        run: dotnet build --configuration Release --version-suffix -prerelease-$(date +%Y%m%d%H%M%S)
+        shell: bash
+
+      - name: Publish Nuget pre-release package
+        run: dotnet nuget push src/SqsPoller.Abstractions/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k $(cat sqspoller-abstractions-nuget-apikey) -s https://api.nuget.org/v3/index.json
+        shell: bash
