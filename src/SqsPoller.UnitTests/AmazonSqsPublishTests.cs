@@ -30,9 +30,9 @@ namespace SqsPoller.UnitTests
             
             await sqsMock.Object.PublishAsync(QueueUrl, testMessage);
 
-            sqsMock.Verify(b => b.SendMessageAsync(
-                It.Is<SendMessageRequest>(r => r.QueueUrl == QueueUrl && r.MessageBody == "{\"TestProperty\":\"prop\"}"
-                    && r.MessageAttributes.Count == 1 && r.MessageAttributes[Constants.MessageType].StringValue == typeof(TestMessage).FullName),
+            sqsMock.Verify(sqs => sqs.SendMessageAsync(
+                It.Is<SendMessageRequest>(request => request.QueueUrl == QueueUrl && request.MessageBody == "{\"TestProperty\":\"prop\"}"
+                    && request.MessageAttributes.Count == 1 && request.MessageAttributes[Constants.MessageType].StringValue == typeof(TestMessage).FullName),
                 It.IsAny<CancellationToken>()));
         }
 
@@ -50,9 +50,9 @@ namespace SqsPoller.UnitTests
             var queueName = await resolver.Resolve(QueueName);
             await sqsMock.Object.PublishAsync(queueName, testMessage);
 
-            sqsMock.Verify(b => b.SendMessageAsync(
-                It.Is<SendMessageRequest>(r => r.QueueUrl == QueueUrl && r.MessageBody == "{\"TestProperty\":\"prop\"}"
-                    && r.MessageAttributes.Count == 1 && r.MessageAttributes[Constants.MessageType].StringValue == typeof(TestMessage).FullName),
+            sqsMock.Verify(sqs => sqs.SendMessageAsync(
+                It.Is<SendMessageRequest>(request => request.QueueUrl == QueueUrl && request.MessageBody == "{\"TestProperty\":\"prop\"}"
+                    && request.MessageAttributes.Count == 1 && request.MessageAttributes[Constants.MessageType].StringValue == typeof(TestMessage).FullName),
                 It.IsAny<CancellationToken>()));
         }
 
@@ -60,7 +60,7 @@ namespace SqsPoller.UnitTests
         {
             return Builder<GetQueueUrlResponse>
                 .CreateNew()
-                .With(it => it.QueueUrl = QueueUrl)
+                .With(response => response.QueueUrl = QueueUrl)
                 .Build();
         }
     }
