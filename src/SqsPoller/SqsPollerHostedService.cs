@@ -3,29 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SqsPoller.Abstractions;
+using SqsPoller.Resolvers;
 
 namespace SqsPoller
 {
-    internal class SqsPollerHostedService: BackgroundService
+    internal class SqsPollerHostedService : BackgroundService
     {
-        private readonly AmazonSQSClient _amazonSqsClient;
-        private readonly SqsPoolerConfig _config;
+        private readonly AmazonSqsReciever _amazonSqsReciever;
         private readonly IConsumerResolver _consumerResolver;
         private readonly ILogger<SqsPollerHostedService> _logger;
 
         public SqsPollerHostedService(
-            AmazonSQSClient amazonSqsClient, 
-            SqsPoolerConfig config, 
+            AmazonSqsReciever amazonSqsReciever,
             IConsumerResolver consumerResolver,
             ILogger<SqsPollerHostedService> logger)
         {
-            _amazonSqsClient = amazonSqsClient;
-            _config = config;
+            _amazonSqsReciever = amazonSqsReciever;
             _consumerResolver = consumerResolver;
             _logger = logger;
         }
@@ -46,23 +44,16 @@ namespace SqsPoller
             }))
             {
                 _logger.LogDebug("Start polling messages from a queue. correlation_id: {correlation_id}");
-                ReceiveMessageResponse receiveMessageResult = null;
+                ReceiveMessageResponse receiveMessageResult;
                 try
                 {
-                    receiveMessageResult = await _amazonSqsClient
-                        .ReceiveMessageAsync(new ReceiveMessageRequest
-                        {
-                            WaitTimeSeconds = _config.WaitTimeSeconds,
-                            MaxNumberOfMessages = _config.MaxNumberOfMessages,
-                            MessageAttributeNames = _config.MessageAttributeNames,
-                            QueueUrl = _config.QueueUrl
-                        }, cancellationToken);
+                    receiveMessageResult = await _amazonSqsReciever.ReceiveMessageAsync(cancellationToken);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to receive messages from the queue");
+                    return;
                 }
-
 
                 var messagesCount = receiveMessageResult.Messages.Count;
                 _logger.LogDebug("{count} messages received", messagesCount);
@@ -72,7 +63,7 @@ namespace SqsPoller
                     try
                     {
                         var messageType = msg.MessageAttributes
-                            .FirstOrDefault(x => x.Key == "MessageType").Value?.StringValue;
+                            .FirstOrDefault(x => x.Key == Constants.MessageType).Value?.StringValue;
 
                         using (_logger.BeginScope(new Dictionary<string, object>
                         {
@@ -87,19 +78,14 @@ namespace SqsPoller
                             else
                             {
                                 var body = JsonConvert.DeserializeObject<MessageBody>(msg.Body);
-                                messageType = body.MessageAttributes
-                                    .FirstOrDefault(x => x.Key == "MessageType").Value.Value;
+                                messageType = body.MessageAttributes.FirstOrDefault(x => x.Key == Constants.MessageType).Value.Value;
                                 _logger.LogDebug("Message Type is {message_type}");
                                 await _consumerResolver.Resolve(body.Message, messageType, cancellationToken);
                             }
                         }
 
                         _logger.LogDebug("Deleting the message {message_id}", msg.ReceiptHandle);
-                        await _amazonSqsClient.DeleteMessageAsync(new DeleteMessageRequest
-                        {
-                            QueueUrl = _config.QueueUrl,
-                            ReceiptHandle = msg.ReceiptHandle
-                        }, cancellationToken);
+                        await _amazonSqsReciever.DeleteMessageAsync(msg.ReceiptHandle, cancellationToken);
 
                         _logger.LogDebug(
                             "The message {message_id} has been deleted successfully",

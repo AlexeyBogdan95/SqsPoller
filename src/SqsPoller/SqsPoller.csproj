@@ -16,8 +16,13 @@
     <ItemGroup>
         <PackageReference Include="AWSSDK.SQS" Version="3.3.102.12" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.2.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\SqsPoller.Abstractions\SqsPoller.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

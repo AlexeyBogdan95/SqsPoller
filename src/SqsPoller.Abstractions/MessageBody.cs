@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 
-namespace SqsPoller
+namespace SqsPoller.Abstractions
 {
     public class MessageBody
     {
         public string Message { get; set; }
-        public Dictionary<string, MessageAttribute> MessageAttributes { get; set; }
-            = new Dictionary<string, MessageAttribute>();
+        public Dictionary<string, MessageAttribute> MessageAttributes { get; set; } = new Dictionary<string, MessageAttribute>();
         public DateTime TimeStamp { get; set; }
     }
     public class MessageAttribute

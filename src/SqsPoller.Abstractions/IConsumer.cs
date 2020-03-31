@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqsPoller
+namespace SqsPoller.Abstractions
 {
     /// <summary>
     /// It's used for IoC purposes only. Please don't use it
@@ -12,9 +12,9 @@ namespace SqsPoller
     public interface IConsumer
     {
     }
-    
-    public interface IConsumer<in T>: IConsumer
+
+    public interface IConsumer<in T> : IConsumer
     {
-        Task Consume(T message, CancellationToken cancellationToken);
+        Task Consume(T message, CancellationToken cancellationToken = default);
     }
 }
