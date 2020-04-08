@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS;
@@ -33,6 +34,27 @@ namespace SqsPoller.UnitTests
             sqsMock.Verify(b => b.SendMessageAsync(
                 It.Is<SendMessageRequest>(r => r.QueueUrl == QueueUrl && r.MessageBody == "{\"TestProperty\":\"prop\"}"
                     && r.MessageAttributes.Count == 1 && r.MessageAttributes[Constants.MessageType].StringValue == typeof(TestMessage).FullName),
+                It.IsAny<CancellationToken>()));
+        }
+
+        [TestMethod]
+        public async Task TestPublishWithAttributesAsync()
+        {
+            var sqsMock = new Mock<IAmazonSQS>();
+            var testMessage = new TestMessage() {TestProperty = "prop"};
+
+            var attributes = new Dictionary<string, MessageAttributeValue>()
+            {
+                {"AttributeKey", new MessageAttributeValue() {DataType = "String", StringValue = "AttributeValue"}}
+            };
+            
+            await sqsMock.Object.PublishAsync(QueueUrl, testMessage, attributes);
+
+            sqsMock.Verify(b => b.SendMessageAsync(
+                It.Is<SendMessageRequest>(r => r.QueueUrl == QueueUrl && r.MessageBody == "{\"TestProperty\":\"prop\"}"
+                    && r.MessageAttributes.Count == 2
+                        && r.MessageAttributes[Constants.MessageType].StringValue == typeof(TestMessage).FullName
+                        && r.MessageAttributes["AttributeKey"].StringValue == "AttributeValue"),
                 It.IsAny<CancellationToken>()));
         }
 
