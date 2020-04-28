@@ -10,7 +10,7 @@ namespace SqsPoller
     public static class SqsPollerConfiguration
     {
         public static IServiceCollection AddSqsPoller(
-            this IServiceCollection services, SqsPoolerConfig config, Assembly[] assembliesWithConsumers)
+            this IServiceCollection services, SqsPollerConfig config, Assembly[] assembliesWithConsumers)
         {
             services.AddSingleton(config);
             services.AddSingleton<IConsumerResolver, ConsumerResolver>();
@@ -30,7 +30,7 @@ namespace SqsPoller
             return services;
         }
 
-        private static AmazonSQSConfig CreateSqsConfig(SqsPoolerConfig config)
+        private static AmazonSQSConfig CreateSqsConfig(SqsPollerConfig config)
         {
             var amazonSqsConfig = new AmazonSQSConfig
             {

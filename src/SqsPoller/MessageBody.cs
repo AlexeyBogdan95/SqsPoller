@@ -10,6 +10,7 @@ namespace SqsPoller
             = new Dictionary<string, MessageAttribute>();
         public DateTime TimeStamp { get; set; }
     }
+
     public class MessageAttribute
     {
         public string Type { get; set; }
