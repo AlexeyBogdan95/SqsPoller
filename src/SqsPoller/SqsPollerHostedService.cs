@@ -63,7 +63,6 @@ namespace SqsPoller
                     _logger.LogError(ex, "Failed to receive messages from the queue");
                 }
 
-
                 var messagesCount = receiveMessageResult.Messages.Count;
                 _logger.LogTrace("{count} messages received", messagesCount);
 
@@ -73,7 +72,7 @@ namespace SqsPoller
                     {
                         var messageType = msg.MessageAttributes
                             .FirstOrDefault(pair => pair.Key == "MessageType").Value?.StringValue;
-                        
+
                         if (messageType != null)
                         {
                             _logger.LogTrace("Message Type is {message_type}", messageType);
@@ -87,7 +86,7 @@ namespace SqsPoller
                             _logger.LogTrace("Message Type is {message_type}", messageType);
                             await _consumerResolver.Resolve(body.Message, messageType, cancellationToken);
                         }
-                        
+
                         _logger.LogTrace("Deleting the message {message_id}", msg.ReceiptHandle);
                         await _amazonSqsClient.DeleteMessageAsync(new DeleteMessageRequest
                         {
