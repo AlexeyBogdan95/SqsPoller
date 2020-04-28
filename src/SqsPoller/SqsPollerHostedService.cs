@@ -14,13 +14,13 @@ namespace SqsPoller
     internal class SqsPollerHostedService: BackgroundService
     {
         private readonly AmazonSQSClient _amazonSqsClient;
-        private readonly SqsPoolerConfig _config;
+        private readonly SqsPollerConfig _config;
         private readonly IConsumerResolver _consumerResolver;
         private readonly ILogger<SqsPollerHostedService> _logger;
 
         public SqsPollerHostedService(
             AmazonSQSClient amazonSqsClient, 
-            SqsPoolerConfig config, 
+            SqsPollerConfig config, 
             IConsumerResolver consumerResolver,
             ILogger<SqsPollerHostedService> logger)
         {
@@ -45,7 +45,7 @@ namespace SqsPoller
                 ["correlation_id"] = Guid.NewGuid()
             }))
             {
-                _logger.LogDebug("Start polling messages from a queue. correlation_id: {correlation_id}");
+                _logger.LogTrace("Start polling messages from a queue. correlation_id: {correlation_id}");
                 ReceiveMessageResponse receiveMessageResult = null;
                 try
                 {
@@ -65,43 +65,37 @@ namespace SqsPoller
 
 
                 var messagesCount = receiveMessageResult.Messages.Count;
-                _logger.LogDebug("{count} messages received", messagesCount);
+                _logger.LogTrace("{count} messages received", messagesCount);
 
                 foreach (var msg in receiveMessageResult.Messages)
                 {
                     try
                     {
                         var messageType = msg.MessageAttributes
-                            .FirstOrDefault(x => x.Key == "MessageType").Value?.StringValue;
-
-                        using (_logger.BeginScope(new Dictionary<string, object>
+                            .FirstOrDefault(pair => pair.Key == "MessageType").Value?.StringValue;
+                        
+                        if (messageType != null)
                         {
-                            ["message_type"] = messageType
-                        }))
-                        {
-                            if (messageType != null)
-                            {
-                                _logger.LogDebug("Message Type is {message_type}");
-                                await _consumerResolver.Resolve(msg.Body, messageType, cancellationToken);
-                            }
-                            else
-                            {
-                                var body = JsonConvert.DeserializeObject<MessageBody>(msg.Body);
-                                messageType = body.MessageAttributes
-                                    .FirstOrDefault(x => x.Key == "MessageType").Value.Value;
-                                _logger.LogDebug("Message Type is {message_type}");
-                                await _consumerResolver.Resolve(body.Message, messageType, cancellationToken);
-                            }
+                            _logger.LogTrace("Message Type is {message_type}", messageType);
+                            await _consumerResolver.Resolve(msg.Body, messageType, cancellationToken);
                         }
-
-                        _logger.LogDebug("Deleting the message {message_id}", msg.ReceiptHandle);
+                        else
+                        {
+                            var body = JsonConvert.DeserializeObject<MessageBody>(msg.Body);
+                            messageType = body.MessageAttributes
+                                .FirstOrDefault(pair => pair.Key == "MessageType").Value.Value;
+                            _logger.LogTrace("Message Type is {message_type}", messageType);
+                            await _consumerResolver.Resolve(body.Message, messageType, cancellationToken);
+                        }
+                        
+                        _logger.LogTrace("Deleting the message {message_id}", msg.ReceiptHandle);
                         await _amazonSqsClient.DeleteMessageAsync(new DeleteMessageRequest
                         {
                             QueueUrl = _config.QueueUrl,
                             ReceiptHandle = msg.ReceiptHandle
                         }, cancellationToken);
 
-                        _logger.LogDebug(
+                        _logger.LogTrace(
                             "The message {message_id} has been deleted successfully",
                             msg.ReceiptHandle);
 
