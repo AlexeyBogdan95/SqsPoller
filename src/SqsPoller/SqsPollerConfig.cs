@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace SqsPoller
 {
-    public class SqsPoolerConfig
+    public class SqsPollerConfig
     {
         public string Region { get; set; }
         
