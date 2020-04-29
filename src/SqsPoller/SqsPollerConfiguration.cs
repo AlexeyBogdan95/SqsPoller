@@ -68,7 +68,7 @@ namespace SqsPoller
             services.ConfigureNamedConfig(queueName, sqsSection);
 
             services.AddSqsPoller(
-                sc => sc.GetService<IOptionsSnapshot<SqsPollerConfig>>().Get(queueName),
+                sc => sc.GetService<IOptionsMonitor<SqsPollerConfig>>().Get(queueName),
                 consumerTypes
             );
 
