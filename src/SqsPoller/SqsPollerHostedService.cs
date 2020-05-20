@@ -32,71 +32,65 @@ namespace SqsPoller
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            var queueUrl = !string.IsNullOrEmpty(_config.QueueUrl)
+                ? _config.QueueUrl
+                : (await _amazonSqsClient.GetQueueUrlAsync(_config.QueueName, stoppingToken)).QueueUrl;
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Handle(stoppingToken);
+                await Handle(queueUrl, stoppingToken);
             }
         }
 
-        private async Task Handle(CancellationToken cancellationToken)
+        private async Task Handle(string queueUrl, CancellationToken cancellationToken)
         {
-            using (_logger.BeginScope(new Dictionary<string, object>
+            using var correlationIdScope = _logger.BeginScope(
+                new Dictionary<string, object> {["correlation_id"] = Guid.NewGuid()});
+            _logger.LogTrace("Start polling messages from a queue. correlation_id: {correlation_id}");
+            try
             {
-                ["correlation_id"] = Guid.NewGuid()
-            }))
-            {
-                _logger.LogTrace("Start polling messages from a queue. correlation_id: {correlation_id}");
-                ReceiveMessageResponse receiveMessageResult = null;
-                try
-                {
-                    receiveMessageResult = await _amazonSqsClient
-                        .ReceiveMessageAsync(new ReceiveMessageRequest
-                        {
-                            WaitTimeSeconds = _config.WaitTimeSeconds,
-                            MaxNumberOfMessages = _config.MaxNumberOfMessages,
-                            MessageAttributeNames = _config.MessageAttributeNames,
-                            QueueUrl = _config.QueueUrl
-                        }, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to receive messages from the queue");
-                }
-
+                var receiveMessageResult = await _amazonSqsClient
+                    .ReceiveMessageAsync(new ReceiveMessageRequest
+                    {
+                        WaitTimeSeconds = _config.WaitTimeSeconds,
+                        MaxNumberOfMessages = _config.MaxNumberOfMessages,
+                        MessageAttributeNames = _config.MessageAttributeNames,
+                        QueueUrl = queueUrl
+                    }, cancellationToken);
+                
                 var messagesCount = receiveMessageResult.Messages.Count;
                 _logger.LogTrace("{count} messages received", messagesCount);
-
-                foreach (var msg in receiveMessageResult.Messages)
+                foreach (var message in receiveMessageResult.Messages)
                 {
                     try
                     {
-                        var messageType = msg.MessageAttributes
-                            .FirstOrDefault(pair => pair.Key == "MessageType").Value?.StringValue;
+                        var messageType = message.MessageAttributes
+                            .FirstOrDefault(pair => pair.Key == "MessageType")
+                            .Value?.StringValue;
 
                         if (messageType != null)
                         {
                             _logger.LogTrace("Message Type is {message_type}", messageType);
-                            await _consumerResolver.Resolve(msg.Body, messageType, cancellationToken);
+                            await _consumerResolver.Resolve(message.Body, messageType, cancellationToken);
                         }
                         else
                         {
-                            var body = JsonConvert.DeserializeObject<MessageBody>(msg.Body);
+                            var body = JsonConvert.DeserializeObject<MessageBody>(message.Body);
                             messageType = body.MessageAttributes
                                 .FirstOrDefault(pair => pair.Key == "MessageType").Value.Value;
                             _logger.LogTrace("Message Type is {message_type}", messageType);
                             await _consumerResolver.Resolve(body.Message, messageType, cancellationToken);
                         }
 
-                        _logger.LogTrace("Deleting the message {message_id}", msg.ReceiptHandle);
+                        _logger.LogTrace("Deleting the message {message_id}", message.ReceiptHandle);
                         await _amazonSqsClient.DeleteMessageAsync(new DeleteMessageRequest
                         {
-                            QueueUrl = _config.QueueUrl,
-                            ReceiptHandle = msg.ReceiptHandle
+                            QueueUrl = queueUrl,
+                            ReceiptHandle = message.ReceiptHandle
                         }, cancellationToken);
 
                         _logger.LogTrace(
                             "The message {message_id} has been deleted successfully",
-                            msg.ReceiptHandle);
+                            message.ReceiptHandle);
 
                         if (cancellationToken.IsCancellationRequested)
                             return;
@@ -104,9 +98,13 @@ namespace SqsPoller
                     catch (Exception ex)
                     {
                         _logger.LogError(
-                            "Failed to handle message {message_id}. {@ex}", msg.ReceiptHandle, ex);
+                            "Failed to handle message {message_id}. {@ex}", message.ReceiptHandle, ex);
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to receive messages from the queue");
             }
         }
     }

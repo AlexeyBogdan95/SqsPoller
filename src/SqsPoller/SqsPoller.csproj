@@ -3,14 +3,24 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>SqsPoller</PackageId>
-        <Version>0.2.2$(VersionSuffix)</Version>
+        <Version>0.3.0$(VersionSuffix)</Version>
         <Authors>Alexey Bogdan</Authors>
         <Company>Alexey Bogdan</Company>
         <Description>A small library that helps ASP.NET Core applications easily consume messages from a SQS queue</Description>
         <RepositoryUrl>https://github.com/AlexeyBogdan95/SqsPoller</RepositoryUrl>
         <PackageProjectUrl>https://www.nuget.org/packages/SqsPoller/</PackageProjectUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <LangVersion>8</LangVersion>
+        <Nullable>enable</Nullable>
         
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     </PropertyGroup>
     
     <ItemGroup>

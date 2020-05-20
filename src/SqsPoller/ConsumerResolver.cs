@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace SqsPoller
 {
-    internal class ConsumerResolver: IConsumerResolver
+    public class ConsumerResolver: IConsumerResolver
     {
         private readonly IEnumerable<IConsumer> _consumers;
 
@@ -35,10 +35,10 @@ namespace SqsPoller
                     cancellationToken
                 };
                 
-                await (Task) consumer.GetType().GetMethod("Consume")?.Invoke(consumer, @params);
+                await (Task) consumer.GetType().GetMethod("Consume").Invoke(consumer, @params);
                 return;
             }
-
+            
             throw new ConsumerNotFoundException(messageType);
         }
     }
