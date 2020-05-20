@@ -4,11 +4,38 @@ namespace SqsPoller
 {
     public class SqsPollerConfig
     {
-        public string Region { get; set; }
+        /// <summary>
+        /// Gets or sets AWS Region
+        /// </summary>
+        public string Region { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets and sets of the ServiceURL property.
+        /// This is an optional property; change it
+        /// only if you want to try a different service
+        /// endpoint.
+        /// </summary>
+        public string ServiceUrl { get; set; } = string.Empty;
         
-        public string ServiceUrl { get; set; }
-        
-        public string QueueUrl { get; set; }
+        /// <summary>
+        /// Gets or sets AWS SQS Queue URL. It overrides QueueName.
+        /// </summary>
+        public string QueueUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets AWS SQS Queue Name. It's overriden by QueueUrl
+        /// </summary>
+        public string QueueName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets AWS Access Key
+        /// </summary>
+        public string AccessKey { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets AWS Secret Key
+        /// </summary>
+        public string SecretKey { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets and sets the property WaitTimeSeconds (default 20).

@@ -1,0 +1,19 @@
+version: '3.7'
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack-aws
+    environment:
+      - SERVICES=sqs,sns
+      - DEFAULT_REGION=us-east-1
+      - DATA_DIR=/tmp/localstack/data
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack-data:/tmp/localstack
+
+volumes:
+
+  localstack-data:
+    name: localstack-data

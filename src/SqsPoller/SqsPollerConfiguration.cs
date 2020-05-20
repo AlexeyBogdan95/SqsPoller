@@ -14,11 +14,22 @@ namespace SqsPoller
         {
             services.AddSingleton(config);
             services.AddSingleton<IConsumerResolver, ConsumerResolver>();
-            services.AddSingleton(provider => new AmazonSQSClient(CreateSqsConfig(config)));
+            services.AddSingleton(provider =>
+            {
+                if (!string.IsNullOrEmpty(config.AccessKey) && 
+                    !string.IsNullOrEmpty(config.SecretKey))
+                {
+                    return new AmazonSQSClient(
+                        config.AccessKey, config.SecretKey,CreateSqsConfig(config));
+                }
+
+                return new AmazonSQSClient(CreateSqsConfig(config));
+            });
 
             services.AddTransient<IHostedService, SqsPollerHostedService>();
             
-            var types = assembliesWithConsumers.SelectMany(assembly => assembly.GetTypes())
+            var types = assembliesWithConsumers
+                .SelectMany(assembly => assembly.GetTypes())
                 .Where(type => type.IsClass && typeof(IConsumer).IsAssignableFrom(type))
                 .ToArray();
 
@@ -38,10 +49,8 @@ namespace SqsPoller
             };
 
             if (!string.IsNullOrEmpty(config.Region))
-            {
                 amazonSqsConfig.RegionEndpoint = RegionEndpoint.GetBySystemName(config.Region);
-            }
-
+            
             return amazonSqsConfig;
         }
     }

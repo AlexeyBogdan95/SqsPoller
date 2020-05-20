@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SqsPoller
+namespace SqsPoller.Extensions.Publisher.Tests.Integration
 {
     internal class MessageBody
     {
