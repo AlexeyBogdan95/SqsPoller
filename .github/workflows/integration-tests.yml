@@ -1,0 +1,19 @@
+name: Intergration Tests
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.100
+      - name: Run docker-compose
+        run: docker-compose up -d
+      - name: Run Integration Tests
+        run: dotnet test ./test/SqsPoller.Extensions.Publisher.Tests.Integration/SqsPoller.Extensions.Publisher.Tests.Integration.csproj
