@@ -44,8 +44,12 @@ namespace SqsPoller
         private async Task Handle(string queueUrl, CancellationToken cancellationToken)
         {
             using var correlationIdScope = _logger.BeginScope(
-                new Dictionary<string, object> {["correlation_id"] = Guid.NewGuid()});
-            _logger.LogTrace("Start polling messages from a queue. correlation_id: {correlation_id}");
+                new Dictionary<string, object>
+                {
+                    ["correlation_id"] = Guid.NewGuid(),
+                    ["queue_url"] = queueUrl
+                });
+            _logger.LogTrace("Start polling messages from a queue: {queue_url}. correlation_id: {correlation_id}");
             try
             {
                 var receiveMessageResult = await _amazonSqsClient
