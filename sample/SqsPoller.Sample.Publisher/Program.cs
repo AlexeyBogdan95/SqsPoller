@@ -55,6 +55,12 @@ namespace SqsPoller.Sample.Publisher
                 await sqs.SendMessageAsync(queueUrl, barMessage);
                 Console.WriteLine($"The message {barMessage.Value} has been sent");
             }
+            
+            await sqs.CreateQueueAsync(config.SecondQueueName);
+            var secondQueueUrl = (await sqs.GetQueueUrlAsync(config.SecondQueueName)).QueueUrl;
+            var barMessageForSecondQueue = new BarMessage {Value = $"barSecondQueue"};
+            await sqs.SendMessageAsync(secondQueueUrl, barMessageForSecondQueue);
+            Console.WriteLine($"The message {barMessageForSecondQueue.Value} has been sent");
         }
     }
 }
