@@ -1,9 +1,11 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using Amazon;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace SqsPoller
 {
@@ -12,32 +14,43 @@ namespace SqsPoller
         public static IServiceCollection AddSqsPoller(
             this IServiceCollection services, SqsPollerConfig config, Assembly[] assembliesWithConsumers)
         {
-            services.AddSingleton(config);
-            services.AddSingleton<IConsumerResolver, ConsumerResolver>();
-            services.AddSingleton(provider =>
-            {
-                if (!string.IsNullOrEmpty(config.AccessKey) && 
-                    !string.IsNullOrEmpty(config.SecretKey))
-                {
-                    return new AmazonSQSClient(
-                        config.AccessKey, config.SecretKey,CreateSqsConfig(config));
-                }
-
-                return new AmazonSQSClient(CreateSqsConfig(config));
-            });
-
-            services.AddTransient<IHostedService, SqsPollerHostedService>();
-            
             var types = assembliesWithConsumers
                 .SelectMany(assembly => assembly.GetTypes())
                 .Where(type => type.IsClass && typeof(IConsumer).IsAssignableFrom(type))
                 .ToArray();
+            
+            return AddSqsPoller(services, config, types);
+        }
 
+        public static IServiceCollection AddSqsPoller(
+            this IServiceCollection services, SqsPollerConfig config, Type[] types)
+        {
             foreach (var type in types)
             {
-                services.AddSingleton(typeof(IConsumer), type);
+                services.AddSingleton(type);
             }
             
+            services.AddTransient<IHostedService>(provider =>
+            {
+                AmazonSQSClient sqsClient;
+                if (!string.IsNullOrEmpty(config.AccessKey) &&
+                    !string.IsNullOrEmpty(config.SecretKey))
+                {
+                    sqsClient = new AmazonSQSClient(
+                        config.AccessKey, config.SecretKey, CreateSqsConfig(config));
+                }
+                else
+                {
+                    sqsClient = new AmazonSQSClient(CreateSqsConfig(config));
+                }
+
+                return new SqsPollerHostedService(
+                    sqsClient,
+                    config,
+                    new ConsumerResolver(types.Select(provider.GetRequiredService).Cast<IConsumer>().ToArray()),
+                    provider.GetRequiredService<ILogger<SqsPollerHostedService>>());
+            });
+
             return services;
         }
 

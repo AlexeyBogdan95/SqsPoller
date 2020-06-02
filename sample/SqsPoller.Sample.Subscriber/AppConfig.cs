@@ -13,5 +13,6 @@ namespace SqsPoller.Sample.Subscriber
         public string AccessKey { get; set; } = string.Empty;
         public string SecretKey { get; set; } = string.Empty;
         public string QueueName { get; set; } = string.Empty;
+        public string SecondQueueName { get; set; } = string.Empty;
     }
 }

@@ -34,7 +34,15 @@ namespace SqsPoller.Sample.Subscriber
                         QueueName = config.QueueName,
                         AccessKey = config.AccessKey,
                         SecretKey = config.SecretKey
-                    }, new[] {typeof(Program).Assembly});
+                    }, new[] {typeof(BarConsumer), typeof(FooConsumer)});
+                    
+                    services.AddSqsPoller(new SqsPollerConfig
+                    {
+                        ServiceUrl = config.ServiceUrl,
+                        QueueName = config.SecondQueueName,
+                        AccessKey = config.AccessKey,
+                        SecretKey = config.SecretKey
+                    }, new[] {typeof(BarConsumer)});
                 })
                 .UseSerilog()
                 .UseConsoleLifetime();
