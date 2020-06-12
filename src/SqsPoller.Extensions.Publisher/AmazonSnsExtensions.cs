@@ -9,10 +9,10 @@ namespace SqsPoller.Extensions.Publisher
 {
     public static class AmazonSnsExtensions
     {
-        public static async Task PublishAsync<T>(
+        public static async Task<PublishResponse> PublishAsync<T>(
             this IAmazonSimpleNotificationService client, string topicArn, T message) where T: new()
         {
-            await client.PublishAsync(new PublishRequest
+            return await client.PublishAsync(new PublishRequest
             {
                 TopicArn = topicArn,
                 Message = JsonConvert.SerializeObject(message, new JsonSerializerSettings
