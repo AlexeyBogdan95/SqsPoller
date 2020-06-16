@@ -65,8 +65,16 @@ namespace SqsPoller
                 _logger.LogTrace("{count} messages received", messagesCount);
                 foreach (var message in receiveMessageResult.Messages)
                 {
+                    using var messageIdScope = _logger.BeginScope(
+                        new Dictionary<string, object>
+                        {
+                            ["message_id"] = message.MessageId,
+                            ["receipt_handle"] = message.ReceiptHandle
+                        });
                     try
                     {
+                        _logger.LogTrace("Start processing the message with id {message_id} and ReceiptHandle {receipt_handle}");
+
                         var messageType = message.MessageAttributes
                             .FirstOrDefault(pair => pair.Key == "MessageType")
                             .Value?.StringValue;
@@ -85,7 +93,7 @@ namespace SqsPoller
                             await _consumerResolver.Resolve(body.Message, messageType, cancellationToken);
                         }
 
-                        _logger.LogTrace("Deleting the message {message_id}", message.ReceiptHandle);
+                        _logger.LogTrace("Deleting the message with id {message_id} and ReceiptHandle {receipt_handle}");
                         await _amazonSqsClient.DeleteMessageAsync(new DeleteMessageRequest
                         {
                             QueueUrl = queueUrl,
@@ -93,16 +101,15 @@ namespace SqsPoller
                         }, cancellationToken);
 
                         _logger.LogTrace(
-                            "The message {message_id} has been deleted successfully",
-                            message.ReceiptHandle);
+                            "The message with id {message_id} and ReceiptHandle {receipt_handle} has been deleted successfully");
 
                         if (cancellationToken.IsCancellationRequested)
                             return;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(
-                            "Failed to handle message {message_id}. {@ex}", message.ReceiptHandle, ex);
+                        _logger.LogError(ex,
+                            "Failed to handle message with id {message_id} and ReceiptHandle {receipt_handle}");
                     }
                 }
             }

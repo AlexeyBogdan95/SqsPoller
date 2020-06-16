@@ -10,13 +10,13 @@ namespace SqsPoller.Extensions.Publisher
 {
     public static class AmazonSqsExtensions
     {
-        public static async Task SendMessageAsync<T>(
+        public static async Task<SendMessageResponse> SendMessageAsync<T>(
             this IAmazonSQS amazonSqsClient, 
             string queueUrl,
             T message, 
             CancellationToken cancellationToken = default) where T: new()
         {
-            await amazonSqsClient.SendMessageAsync(new SendMessageRequest
+            return await amazonSqsClient.SendMessageAsync(new SendMessageRequest
             {
                 QueueUrl = queueUrl,
                 MessageBody = JsonConvert.SerializeObject(message, new JsonSerializerSettings
