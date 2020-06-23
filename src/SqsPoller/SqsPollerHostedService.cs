@@ -99,9 +99,11 @@ namespace SqsPoller
                     messageBody = body.Message;
                 }
                     
+#pragma warning disable 4014
                 _consumerResolver
                     .Resolve(messageBody, messageType, cancellationToken)
                     .ContinueWith(task =>
+#pragma warning restore 4014
                     {
                         if (task.IsFaulted)
                         {
