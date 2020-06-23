@@ -24,7 +24,8 @@ namespace SqsPoller.Sample.Publisher
                 config.SecretKey,
                 new AmazonSQSConfig
                 {
-                    ServiceURL = config.ServiceUrl
+                    ServiceURL = config.ServiceUrl,
+                    
                 }));
             serviceCollection.AddSingleton<IAmazonSimpleNotificationService>(provider =>
                 new AmazonSimpleNotificationServiceClient(
