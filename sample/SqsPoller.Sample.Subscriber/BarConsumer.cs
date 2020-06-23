@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,10 +14,10 @@ namespace SqsPoller.Sample.Subscriber
             _logger = logger;
         }
 
-        public Task Consume(BarMessage message, CancellationToken cancellationToken)
+        public async Task Consume(BarMessage message, CancellationToken cancellationToken)
         {
+            await Task.Delay(5000, cancellationToken);
             _logger.LogInformation("BarMessage.Value = {value}", message.Value);
-            return Task.CompletedTask;
         }
     }
 }
