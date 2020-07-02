@@ -25,9 +25,11 @@ namespace SqsPoller
         public static IServiceCollection AddSqsPoller(
             this IServiceCollection services, SqsPollerConfig config, Type[] types)
         {
+            services.AddSingleton<IConsumerResolver, ConsumerResolver>();
+
             foreach (var type in types)
             {
-                services.AddSingleton(type);
+                services.AddSingleton(typeof(IConsumer), type);
             }
             
             services.AddTransient<IHostedService>(provider =>
@@ -47,7 +49,7 @@ namespace SqsPoller
                 return new SqsPollerHostedService(
                     sqsClient,
                     config,
-                    new ConsumerResolver(types.Select(provider.GetRequiredService).Cast<IConsumer>().ToArray()),
+                    provider.GetRequiredService<IConsumerResolver>(),
                     provider.GetRequiredService<ILogger<SqsPollerHostedService>>());
             });
 
