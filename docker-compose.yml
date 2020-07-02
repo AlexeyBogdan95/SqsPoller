@@ -2,8 +2,8 @@ version: '3.7'
 
 services:
   localstack:
-    image: localstack/localstack:latest
-    container_name: localstack-aws
+    image: localstack/localstack:0.11.0
+    container_name: sqs-poller-locastack-aws
     environment:
       - SERVICES=sqs,sns
       - DEFAULT_REGION=us-east-1
