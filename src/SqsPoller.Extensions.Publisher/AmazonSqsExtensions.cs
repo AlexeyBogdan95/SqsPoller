@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace SqsPoller.Extensions.Publisher
     public static class AmazonSqsExtensions
     {
         public static async Task<SendMessageResponse> SendMessageAsync<T>(
-            this IAmazonSQS amazonSqsClient, 
+            this IAmazonSQS amazonSqsClient,
             string queueUrl,
             T message, 
             CancellationToken cancellationToken = default) where T: new()
@@ -31,6 +32,34 @@ namespace SqsPoller.Extensions.Publisher
                         {
                             DataType = "String",
                             StringValue = message?.GetType().Name
+                        }
+                    }
+                }
+            }, cancellationToken);
+        }
+
+        public static async Task<SendMessageResponse> SendMessageAsync(
+            this IAmazonSQS amazonSqsClient,
+            string queueUrl,
+            object message,
+            Type type,
+            CancellationToken cancellationToken = default)
+        {
+            return await amazonSqsClient.SendMessageAsync(new SendMessageRequest
+            {
+                QueueUrl = queueUrl,
+                MessageBody = JsonConvert.SerializeObject(message, new JsonSerializerSettings
+                {
+                    Formatting = Formatting.Indented,
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                }),
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {
+                        "MessageType", new MessageAttributeValue
+                        {
+                            DataType = "String",
+                            StringValue = type.Name
                         }
                     }
                 }
