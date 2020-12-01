@@ -19,8 +19,8 @@ namespace SqsPoller
         private readonly ILogger<SqsPollerHostedService> _logger;
 
         public SqsPollerHostedService(
-            AmazonSQSClient amazonSqsClient, 
-            SqsPollerConfig config, 
+            AmazonSQSClient amazonSqsClient,
+            SqsPollerConfig config,
             IConsumerResolver consumerResolver,
             ILogger<SqsPollerHostedService> logger)
         {
@@ -76,28 +76,9 @@ namespace SqsPoller
                     _logger.LogTrace(
                         "Start processing the message with id {message_id} and ReceiptHandle {receipt_handle}");
 
-                    var messageType = message.MessageAttributes
-                        .FirstOrDefault(pair => pair.Key == "MessageType")
-                        .Value?.StringValue;
-
-                    string messageBody;
-                    if (messageType != null)
-                    {
-                        _logger.LogTrace("Message Type is {message_type}", messageType);
-                        messageBody = message.Body;
-                    }
-                    else
-                    {
-                        var body = JsonConvert.DeserializeObject<MessageBody>(message.Body);
-                        messageType = body.MessageAttributes
-                            .FirstOrDefault(pair => pair.Key == "MessageType").Value.Value;
-                        _logger.LogTrace("Message Type is {message_type}", messageType);
-                        messageBody = body.Message;
-                    }
-
 #pragma warning disable 4014
                     _consumerResolver
-                        .Resolve(messageBody, messageType, cancellationToken)
+                        .Resolve(message, cancellationToken)
                         .ContinueWith(task =>
 #pragma warning restore 4014
                         {
