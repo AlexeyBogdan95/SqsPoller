@@ -27,5 +27,5 @@ jobs:
         shell: bash
         
       - name: Publish SqsPoller.Extensions.Publisher Nuget pre-release package
-        run: dotnet nuget push src/SqsPoller/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k $(cat nuget-apikey) -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push src/SqsPoller.Extensions.Publisher/bin/Release/SqsPoller.Extensions.Publisher.*.*.*-prerelease-*.nupkg -k $(cat nuget-apikey) -s https://api.nuget.org/v3/index.json
         shell: bash
