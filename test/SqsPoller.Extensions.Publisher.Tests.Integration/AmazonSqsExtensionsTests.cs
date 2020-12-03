@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
+using Newtonsoft.Json;
 using Shouldly;
 using Xunit;
 
@@ -35,9 +36,10 @@ namespace SqsPoller.Extensions.Publisher.Tests.Integration
                 MaxNumberOfMessages = 2,
                 MessageAttributeNames = new List<string> {"All"}
             });
-            var messageTypes = response.Messages.Select(message =>
-                    message.MessageAttributes.Single(pair => pair.Key == "MessageType")
-                        .Value.StringValue)
+            
+            var messageTypes = response.Messages
+                .Select(message => JsonConvert.DeserializeObject<MessageBody>(message.Body))
+                .Select(body => body.MessageAttributes.Single(pair => pair.Key == "MessageType").Value.Value)
                 .ToList();
 
             //Assert
