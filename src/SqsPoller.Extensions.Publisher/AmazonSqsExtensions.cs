@@ -14,7 +14,8 @@ namespace SqsPoller.Extensions.Publisher
         public static async Task<SendMessageResponse> SendMessageAsync<T>(
             this IAmazonSQS amazonSqsClient,
             string queueUrl,
-            T message, 
+            T message,
+            int delayInSeconds = 0,
             CancellationToken cancellationToken = default) where T: new()
         {
             var payload = JsonConvert.SerializeObject(
@@ -44,7 +45,8 @@ namespace SqsPoller.Extensions.Publisher
                 {
                     Messsage = payload,
                     MessageAttributes = attributes
-                })
+                }),
+                DelaySeconds = delayInSeconds
             }, cancellationToken);
         }
 
@@ -53,6 +55,7 @@ namespace SqsPoller.Extensions.Publisher
             string queueUrl,
             object message,
             Type type,
+            int delayInSeconds = 0,
             CancellationToken cancellationToken = default)
         {
             var payload = JsonConvert.SerializeObject(
@@ -81,7 +84,8 @@ namespace SqsPoller.Extensions.Publisher
                 {
                     Messsage = payload,
                     MessageAttributes = attributes
-                })
+                }),
+                DelaySeconds = delayInSeconds
             }, cancellationToken);
         }
     }
