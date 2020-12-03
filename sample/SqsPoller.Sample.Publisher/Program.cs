@@ -58,6 +58,8 @@ namespace SqsPoller.Sample.Publisher
                 var barMessage = new BarMessage {Value = $"bar{i}"};
                 await sqs.SendMessageAsync(queueUrl, barMessage);
                 Console.WriteLine($"The message {barMessage.Value} has been sent");
+                
+                
 
                 var customRouteMessage = new CustomRouteMessage {Value = $"custom-route{i}"};
                 await sns.PublishAsync(new PublishRequest

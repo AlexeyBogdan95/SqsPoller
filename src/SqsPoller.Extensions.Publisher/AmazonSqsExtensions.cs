@@ -18,34 +18,31 @@ namespace SqsPoller.Extensions.Publisher
             int delayInSeconds = 0,
             CancellationToken cancellationToken = default) where T: new()
         {
-            var payload = JsonConvert.SerializeObject(
-                message, 
-                new JsonSerializerSettings
-                {
-                    Formatting = Formatting.Indented,
-                    ContractResolver = new CamelCasePropertyNamesContractResolver()
-                });
-
-            var attributes = new Dictionary<string, MessageAttribute>
+            var messageBody = new MessageBody
             {
-                {
-                    "MessageType", new MessageAttribute
+                Message = JsonConvert.SerializeObject(
+                    message,
+                    new JsonSerializerSettings
                     {
-                        Type = "String",
-                        Value = message?.GetType().Name
+                        Formatting = Formatting.Indented,
+                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                    }),
+                MessageAttributes = new Dictionary<string, MessageAttribute>
+                {
+                    {
+                        "MessageType", new MessageAttribute
+                        {
+                            Type = "String",
+                            Value = message?.GetType().Name
+                        }
                     }
                 }
             };
-            
-            
+
             return await amazonSqsClient.SendMessageAsync(new SendMessageRequest
             {
                 QueueUrl = queueUrl,
-                MessageBody = JsonConvert.SerializeObject(new
-                {
-                    Messsage = payload,
-                    MessageAttributes = attributes
-                }),
+                MessageBody = JsonConvert.SerializeObject(messageBody),
                 DelaySeconds = delayInSeconds
             }, cancellationToken);
         }
@@ -58,21 +55,23 @@ namespace SqsPoller.Extensions.Publisher
             int delayInSeconds = 0,
             CancellationToken cancellationToken = default)
         {
-            var payload = JsonConvert.SerializeObject(
-                message, 
-                new JsonSerializerSettings
-                {
-                    Formatting = Formatting.Indented,
-                    ContractResolver = new CamelCasePropertyNamesContractResolver()
-                });
-
-            var attributes = new Dictionary<string, MessageAttribute>
+            var messageBody = new MessageBody
             {
-                {
-                    "MessageType", new MessageAttribute
+                Message = JsonConvert.SerializeObject(
+                    message,
+                    new JsonSerializerSettings
                     {
-                        Type = "String",
-                        Value = type.Name
+                        Formatting = Formatting.Indented,
+                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                    }),
+                MessageAttributes = new Dictionary<string, MessageAttribute>
+                {
+                    {
+                        "MessageType", new MessageAttribute
+                        {
+                            Type = "String",
+                            Value = type.Name
+                        }
                     }
                 }
             };
@@ -80,11 +79,7 @@ namespace SqsPoller.Extensions.Publisher
             return await amazonSqsClient.SendMessageAsync(new SendMessageRequest
             {
                 QueueUrl = queueUrl,
-                MessageBody = JsonConvert.SerializeObject(new
-                {
-                    Messsage = payload,
-                    MessageAttributes = attributes
-                }),
+                MessageBody = JsonConvert.SerializeObject(messageBody),
                 DelaySeconds = delayInSeconds
             }, cancellationToken);
         }
