@@ -17,24 +17,34 @@ namespace SqsPoller.Extensions.Publisher
             T message, 
             CancellationToken cancellationToken = default) where T: new()
         {
-            return await amazonSqsClient.SendMessageAsync(new SendMessageRequest
-            {
-                QueueUrl = queueUrl,
-                MessageBody = JsonConvert.SerializeObject(message, new JsonSerializerSettings
+            var payload = JsonConvert.SerializeObject(
+                message, 
+                new JsonSerializerSettings
                 {
                     Formatting = Formatting.Indented,
                     ContractResolver = new CamelCasePropertyNamesContractResolver()
-                }),
-                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                });
+
+            var attributes = new Dictionary<string, MessageAttribute>
+            {
                 {
+                    "MessageType", new MessageAttribute
                     {
-                        "MessageType", new MessageAttributeValue
-                        {
-                            DataType = "String",
-                            StringValue = message?.GetType().Name
-                        }
+                        Type = "String",
+                        Value = message?.GetType().Name
                     }
                 }
+            };
+            
+            
+            return await amazonSqsClient.SendMessageAsync(new SendMessageRequest
+            {
+                QueueUrl = queueUrl,
+                MessageBody = JsonConvert.SerializeObject(new
+                {
+                    Messsage = payload,
+                    MessageAttributes = attributes
+                })
             }, cancellationToken);
         }
 
@@ -45,24 +55,33 @@ namespace SqsPoller.Extensions.Publisher
             Type type,
             CancellationToken cancellationToken = default)
         {
-            return await amazonSqsClient.SendMessageAsync(new SendMessageRequest
-            {
-                QueueUrl = queueUrl,
-                MessageBody = JsonConvert.SerializeObject(message, new JsonSerializerSettings
+            var payload = JsonConvert.SerializeObject(
+                message, 
+                new JsonSerializerSettings
                 {
                     Formatting = Formatting.Indented,
                     ContractResolver = new CamelCasePropertyNamesContractResolver()
-                }),
-                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                });
+
+            var attributes = new Dictionary<string, MessageAttribute>
+            {
                 {
+                    "MessageType", new MessageAttribute
                     {
-                        "MessageType", new MessageAttributeValue
-                        {
-                            DataType = "String",
-                            StringValue = type.Name
-                        }
+                        Type = "String",
+                        Value = type.Name
                     }
                 }
+            };
+            
+            return await amazonSqsClient.SendMessageAsync(new SendMessageRequest
+            {
+                QueueUrl = queueUrl,
+                MessageBody = JsonConvert.SerializeObject(new
+                {
+                    Messsage = payload,
+                    MessageAttributes = attributes
+                })
             }, cancellationToken);
         }
     }
