@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
+using Newtonsoft.Json;
 using Shouldly;
 using Xunit;
 
@@ -18,6 +19,8 @@ namespace SqsPoller.Extensions.Publisher.Tests.Integration
             var queueName = Guid.NewGuid().ToString();
             var firstMessage = new FirstMessage {Value = "value1"};
             var secondMessage = new SecondMessage {Value = "value2"};
+            var thirdMessage = new ThirdMessage {Value = "value3"};
+
             var sqsClient = new AmazonSQSClient(
                 AppConfig.AccessKey,
                 AppConfig.SecretKey,
@@ -29,22 +32,30 @@ namespace SqsPoller.Extensions.Publisher.Tests.Integration
             //Act
             await sqsClient.SendMessageAsync(queueUrl, firstMessage);
             await sqsClient.SendMessageAsync(queueUrl, secondMessage);
+            await sqsClient.SendMessageAsync(queueUrl, thirdMessage, typeof(ThirdMessage));
             var response = await sqsClient.ReceiveMessageAsync(new ReceiveMessageRequest
             {
                 QueueUrl = queueUrl,
-                MaxNumberOfMessages = 2,
+                MaxNumberOfMessages = 3,
                 MessageAttributeNames = new List<string> {"All"}
             });
-            var messageTypes = response.Messages.Select(message =>
-                    message.MessageAttributes.Single(pair => pair.Key == "MessageType")
-                        .Value.StringValue)
+            
+            var messageTypes = response.Messages
+                .Select(message => JsonConvert.DeserializeObject<MessageBody>(message.Body))
+                .Select(body => body.MessageAttributes.Single(pair => pair.Key == "MessageType").Value.Value)
                 .ToList();
 
+            var messages = response.Messages
+                .Select(message => JsonConvert.DeserializeObject<MessageBody>(message.Body))
+                .Select(body => body.Message)
+                .ToArray();
+
             //Assert
-            new[] {nameof(FirstMessage), nameof(SecondMessage)}
+            new[] {nameof(FirstMessage), nameof(SecondMessage), nameof(ThirdMessage)}
                 .ShouldAllBe(s => messageTypes.Contains(s));
-            new [] {firstMessage.Value, secondMessage.Value}
-                .ShouldAllBe(s => response.Messages.Any(message => message.Body.Contains(s)));
+            
+            new [] {firstMessage.Value, secondMessage.Value, thirdMessage.Value}
+                .ShouldAllBe(s => messages.Any(m => m.Contains(s)));
         }
     }
 }

@@ -1,0 +1,2 @@
+.gitattributes !filter !diff
+nuget-apikey filter=git-crypt diff=git-crypt

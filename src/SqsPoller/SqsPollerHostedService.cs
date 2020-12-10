@@ -19,8 +19,8 @@ namespace SqsPoller
         private readonly ILogger<SqsPollerHostedService> _logger;
 
         public SqsPollerHostedService(
-            AmazonSQSClient amazonSqsClient, 
-            SqsPollerConfig config, 
+            AmazonSQSClient amazonSqsClient,
+            SqsPollerConfig config,
             IConsumerResolver consumerResolver,
             ILogger<SqsPollerHostedService> logger)
         {
@@ -62,76 +62,63 @@ namespace SqsPoller
                         MessageAttributeNames = _config.MessageAttributeNames,
                         QueueUrl = queueUrl
                     }, cancellationToken);
+
+                var messagesCount = receiveMessageResult.Messages.Count;
+                _logger.LogTrace("{count} messages received", messagesCount);
+                foreach (var message in receiveMessageResult.Messages)
+                {
+                    using var messageIdScope = _logger.BeginScope(
+                        new Dictionary<string, object>
+                        {
+                            ["message_id"] = message.MessageId,
+                            ["receipt_handle"] = message.ReceiptHandle
+                        });
+                    _logger.LogTrace(
+                        "Start processing the message with id {message_id} and ReceiptHandle {receipt_handle}");
+
+#pragma warning disable 4014
+                    _consumerResolver
+                        .Resolve(message, cancellationToken)
+                        .ContinueWith(task =>
+#pragma warning restore 4014
+                        {
+                            if (task.IsFaulted)
+                            {
+                                _logger.LogError(task.Exception,
+                                    "Failed to handle message with id {message_id} and ReceiptHandle {receipt_handle}");
+                                return;
+                            }
+
+                            _logger.LogTrace(
+                                "Deleting the message with id {message_id} and ReceiptHandle {receipt_handle}");
+                            _amazonSqsClient
+                                .DeleteMessageAsync(new DeleteMessageRequest
+                                {
+                                    QueueUrl = queueUrl,
+                                    ReceiptHandle = message.ReceiptHandle
+                                }, cancellationToken)
+                                .ContinueWith(deleteMessageTask =>
+                                {
+                                    if (deleteMessageTask.IsFaulted)
+                                    {
+                                        _logger.LogError(task.Exception,
+                                            "Failed to deleete message with id {message_id} and ReceiptHandle {receipt_handle}");
+                                        return;
+                                    }
+
+                                    _logger.LogTrace(
+                                        "The message with id {message_id} and ReceiptHandle {receipt_handle} has been deleted successfully");
+                                }, cancellationToken);
+                        }, cancellationToken);
+
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
+
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to receive messages from the queue");
-            }
-                
-            var messagesCount = receiveMessageResult.Messages.Count;
-            _logger.LogTrace("{count} messages received", messagesCount);
-            foreach (var message in receiveMessageResult.Messages)
-            {
-                using var messageIdScope = _logger.BeginScope(
-                    new Dictionary<string, object>
-                    {
-                        ["message_id"] = message.MessageId,
-                        ["receipt_handle"] = message.ReceiptHandle
-                    });
-                _logger.LogTrace("Start processing the message with id {message_id} and ReceiptHandle {receipt_handle}");
-
-                var messageType = message.MessageAttributes
-                    .FirstOrDefault(pair => pair.Key == "MessageType")
-                    .Value?.StringValue;
-                
-                string messageBody;
-                if (messageType != null)
-                {
-                    _logger.LogTrace("Message Type is {message_type}", messageType);
-                    messageBody = message.Body;
-                }
-                else
-                {
-                    var body = JsonConvert.DeserializeObject<MessageBody>(message.Body);
-                    messageType = body.MessageAttributes
-                        .FirstOrDefault(pair => pair.Key == "MessageType").Value.Value;
-                    _logger.LogTrace("Message Type is {message_type}", messageType);
-                    messageBody = body.Message;
-                }
-                    
-#pragma warning disable 4014
-                _consumerResolver
-                    .Resolve(messageBody, messageType, cancellationToken)
-                    .ContinueWith(task =>
-#pragma warning restore 4014
-                    {
-                        if (task.IsFaulted)
-                        {
-                            _logger.LogError(task.Exception, "Failed to handle message with id {message_id} and ReceiptHandle {receipt_handle}");
-                            return;
-                        }
-    
-                        _logger.LogTrace("Deleting the message with id {message_id} and ReceiptHandle {receipt_handle}");
-                        _amazonSqsClient
-                            .DeleteMessageAsync(new DeleteMessageRequest
-                            {
-                                QueueUrl = queueUrl,
-                                ReceiptHandle = message.ReceiptHandle
-                            }, cancellationToken)
-                            .ContinueWith(deleteMessageTask =>
-                            {
-                                if (deleteMessageTask.IsFaulted)
-                                {
-                                    _logger.LogError(task.Exception, "Failed to deleete message with id {message_id} and ReceiptHandle {receipt_handle}");
-                                    return;
-                                }
-                                
-                                _logger.LogTrace("The message with id {message_id} and ReceiptHandle {receipt_handle} has been deleted successfully");
-                            }, cancellationToken);
-                    }, cancellationToken);
-                
-                if (cancellationToken.IsCancellationRequested)
-                    return;
             }
         }
     }

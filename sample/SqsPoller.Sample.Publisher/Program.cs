@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.SimpleNotificationService;
+using Amazon.SimpleNotificationService.Model;
 using Amazon.SQS;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using SqsPoller.Extensions.Publisher;
 
 namespace SqsPoller.Sample.Publisher
@@ -17,7 +21,7 @@ namespace SqsPoller.Sample.Publisher
                     .AddJsonFile("appsettings.json", true)
                     .AddEnvironmentVariables()
                     .Build());
-            
+
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient<IAmazonSQS>(provider => new AmazonSQSClient(
                 config.AccessKey,
@@ -54,8 +58,32 @@ namespace SqsPoller.Sample.Publisher
                 var barMessage = new BarMessage {Value = $"bar{i}"};
                 await sqs.SendMessageAsync(queueUrl, barMessage);
                 Console.WriteLine($"The message {barMessage.Value} has been sent");
+                
+                
+
+                var customRouteMessage = new CustomRouteMessage {Value = $"custom-route{i}"};
+                await sns.PublishAsync(new PublishRequest
+                {
+                    TopicArn = topicArn,
+                    Message = JsonConvert.SerializeObject(customRouteMessage, new JsonSerializerSettings
+                    {
+                        Formatting = Formatting.Indented,
+                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                    }),
+                    MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                    {
+                        {
+                            "event", new MessageAttributeValue
+                            {
+                                DataType = "String",
+                                StringValue = "custom_route_message"
+                            }
+                        }
+                    }
+                });;
+                Console.WriteLine($"The message {customRouteMessage.Value} has been published");
             }
-            
+
             await sqs.CreateQueueAsync(config.SecondQueueName);
             var secondQueueUrl = (await sqs.GetQueueUrlAsync(config.SecondQueueName)).QueueUrl;
             var barMessageForSecondQueue = new BarMessage {Value = $"barSecondQueue"};

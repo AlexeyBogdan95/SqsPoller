@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SqsPoller
+namespace SqsPoller.Extensions.Publisher
 {
     internal class MessageBody
     {
@@ -10,7 +10,7 @@ namespace SqsPoller
             = new Dictionary<string, MessageAttribute>();
         public DateTime TimeStamp { get; set; }
     }
-    
+
     internal class MessageAttribute
     {
         public string Type { get; set; } = string.Empty;

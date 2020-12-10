@@ -14,10 +14,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v1
         
+      - name: Unlock secrets
+        uses: sliteteam/github-action-git-crypt-unlock@1.0.2
+        env:
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+        
+      - name: Cat file 
+        run: cat nuget-apikey
+        shell: bash
+        
       - name: Build
         run: dotnet build --configuration Release --version-suffix -prerelease-$(date +%Y%m%d%H%M%S)
         shell: bash
         
-      - name: Publish Nuget pre-release package
+      - name: Publish SqsPoller Nuget pre-release package
         run: dotnet nuget push src/SqsPoller/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k $(cat nuget-apikey) -s https://api.nuget.org/v3/index.json
+        shell: bash
+        
+      - name: Publish SqsPoller.Extensions.Publisher Nuget pre-release package
+        run: dotnet nuget push src/SqsPoller.Extensions.Publisher/bin/Release/SqsPoller.Extensions.Publisher.*.*.*-prerelease-*.nupkg -k $(cat nuget-apikey) -s https://api.nuget.org/v3/index.json
         shell: bash
