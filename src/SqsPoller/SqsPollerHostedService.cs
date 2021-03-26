@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace SqsPoller
 {
-    internal class SqsPollerHostedService: BackgroundService
+    public class SqsPollerHostedService: BackgroundService
     {
         private readonly AmazonSQSClient _amazonSqsClient;
         private readonly SqsPollerConfig _config;
@@ -102,7 +102,7 @@ namespace SqsPoller
                                     if (deleteMessageTask.IsFaulted)
                                     {
                                         _logger.LogError(task.Exception,
-                                            "Failed to deleete message with id {message_id} and ReceiptHandle {receipt_handle}");
+                                            "Failed to delete message with id {message_id} and ReceiptHandle {receipt_handle}");
                                         return;
                                     }
 
