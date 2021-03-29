@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS.Model;
@@ -19,16 +20,17 @@ namespace SqsPoller
             ILogger<ConsumerResolver> logger)
         {
             _logger = logger;
-            _consumersMapping = consumers.Select(c =>
+            _consumersMapping = consumers.SelectMany(c =>
                 {
                     var type = c.GetType();
 
-                    var messageType = type.GetInterfaces()
+                    var messageTypes = type.GetInterfaces()
                         .Where(t => t.IsGenericType)
-                        .SingleOrDefault(t => t.GetGenericTypeDefinition() == typeof(IConsumer<>))
-                        ?.GetGenericArguments().Single();
+                        .Where(t => t.GetGenericTypeDefinition() == typeof(IConsumer<>))
+                        .Select(t => t.GetGenericArguments().Single())
+                        .ToArray();
 
-                    if (messageType == null)
+                    if (messageTypes.Length == 0)
                     {
                         throw new ArgumentException("Please specify message type in generic argument of IConsumer<>");
                     }
@@ -38,19 +40,20 @@ namespace SqsPoller
 
                     if (consumer != null)
                     {
-                        return (c, messageType, consumer);
+                        return messageTypes.Select(t => (c, t, consumer));
                     }
 
-                    return (c, messageType, new SqsConsumer
+                    return messageTypes.Select(t => (c, t, new SqsConsumer
                     {
-                        Value = messageType.Name,
+                        Value = t.Name,
                         MessageAttribute = "MessageType"
-                    });
+                    }));
                 });
         }
 
         public async Task Resolve(Message message, CancellationToken cancellationToken)
         {
+            bool consumerNotFound = true;
             foreach (var consumerMapping in _consumersMapping)
             {
                 var messageType = message.MessageAttributes
@@ -83,12 +86,21 @@ namespace SqsPoller
                     cancellationToken
                 };
 
-                await (Task) consumerMapping.instance.GetType().GetMethod("Consume")
+                await (Task) consumerMapping.instance.GetType().GetMethod(
+                        "Consume",
+                        BindingFlags.Public | BindingFlags.Instance,
+                        null,
+                        CallingConventions.Any,
+                        new [] {consumerMapping.messageType, typeof(CancellationToken)},
+                        null)
                     .Invoke(consumerMapping.instance, @params);
-                return;
+                consumerNotFound = false;
             }
 
-            throw new ConsumerNotFoundException(message.MessageId);
+            if (consumerNotFound)
+            { 
+                throw new ConsumerNotFoundException(message.MessageId);
+            }
         }
     }
 }
