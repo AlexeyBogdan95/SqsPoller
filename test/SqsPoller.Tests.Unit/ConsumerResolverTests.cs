@@ -100,5 +100,83 @@ namespace SqsPoller.Tests.Unit
             //Assert
             Should.Throw<ConsumerNotFoundException>(task);
         }
+        
+        [Fact]
+        public async Task Resolve_ConsumerFound_TwoMethodsAreInvoked()
+        {
+            //Arrange
+            var fakeService = Substitute.For<IFakeService>();
+            var fakeLogger = Substitute.For<ILogger<ConsumerResolver>>();
+            var thirdConsumer = new ThirdMessageConsumer(fakeService);
+            var consumers = new IConsumer[] {thirdConsumer};
+            var consumerResolver = new ConsumerResolver(consumers, fakeLogger);
+            var firstMessage = new FirstMessage {Value = "First Message"};
+            var firstSqsMessage = new Message
+            {
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {"MessageType", new MessageAttributeValue {StringValue = nameof(FirstMessage)}}
+                },
+                Body = JsonConvert.SerializeObject(firstMessage)
+            };
+            
+            var secondMessage = new SecondMessage {Value = "Second Message"};
+            var secondSqsMessage = new Message
+            {
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {"MessageType", new MessageAttributeValue {StringValue = nameof(SecondMessage)}}
+                },
+                Body = JsonConvert.SerializeObject(secondMessage)
+            };
+
+            //Act
+            await consumerResolver.Resolve(firstSqsMessage, CancellationToken.None);
+            await consumerResolver.Resolve(secondSqsMessage, CancellationToken.None);
+
+            //Assert
+            fakeService.Received(1).FirstMethod();
+            fakeService.Received(1).SecondMethod();
+        }
+        
+        [Fact]
+        public async Task Resolve_ConsumersFound_TwoMethodsAreInvokedTwice()
+        {
+            //Arrange
+            var fakeService = Substitute.For<IFakeService>();
+            var fakeLogger = Substitute.For<ILogger<ConsumerResolver>>();
+            var firstConsumer = new FirstMessageConsumer(fakeService);
+            var secondConsumer = new SecondMessageConsumer(fakeService);
+            var thirdConsumer = new ThirdMessageConsumer(fakeService);
+            var consumers = new IConsumer[] {firstConsumer, secondConsumer, thirdConsumer};
+            var consumerResolver = new ConsumerResolver(consumers, fakeLogger);
+            var firstMessage = new FirstMessage {Value = "First Message"};
+            var firstSqsMessage = new Message
+            {
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {"MessageType", new MessageAttributeValue {StringValue = nameof(FirstMessage)}}
+                },
+                Body = JsonConvert.SerializeObject(firstMessage)
+            };
+            
+            var secondMessage = new SecondMessage {Value = "Second Message"};
+            var secondSqsMessage = new Message
+            {
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {"MessageType", new MessageAttributeValue {StringValue = nameof(SecondMessage)}}
+                },
+                Body = JsonConvert.SerializeObject(secondMessage)
+            };
+
+            //Act
+            await consumerResolver.Resolve(firstSqsMessage, CancellationToken.None);
+            await consumerResolver.Resolve(secondSqsMessage, CancellationToken.None);
+
+            //Assert
+            fakeService.Received(2).FirstMethod();
+            fakeService.Received(2).SecondMethod();
+        }
     }
 }
