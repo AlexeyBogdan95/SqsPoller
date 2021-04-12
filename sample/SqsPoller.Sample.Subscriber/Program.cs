@@ -34,7 +34,16 @@ namespace SqsPoller.Sample.Subscriber
                         QueueName = config.QueueName,
                         AccessKey = config.AccessKey,
                         SecretKey = config.SecretKey
-                    }, new[] {typeof(BarConsumer), typeof(FooConsumer), typeof(CustomRouteMessageConsumer)});
+                    }, new[]
+                    {
+                        typeof(BarConsumer),
+                        typeof(FooConsumer),
+                        typeof(CustomRouteMessageConsumer),
+                        typeof(MutableConsumer),
+                        typeof(CancelConsumer),
+                        typeof(HttpConsumer),
+                        typeof(ErrorConsumer)
+                    });
 
                     services.AddSqsPoller(new SqsPollerConfig
                     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Amazon;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using Amazon.SQS;
@@ -46,23 +47,44 @@ namespace SqsPoller.Sample.Publisher
             var sqs = serviceProvider.GetService<IAmazonSQS>();
             await sqs.CreateQueueAsync(config.QueueName);
             var queueUrl = (await sqs.GetQueueUrlAsync(config.QueueName)).QueueUrl;
-
             await sns.SubscribeQueueAsync(topicArn, sqs, queueUrl);
-
+            
             for (var i = 0; i < 10; i++)
             {
                 var fooMessage = new FooMessage {Value = $"foo{i}"};
-                await sns.PublishAsync(topicArn, fooMessage);
+                sns.PublishAsync(topicArn, fooMessage);
                 Console.WriteLine($"The message {fooMessage.Value} has been published");
 
                 var barMessage = new BarMessage {Value = $"bar{i}"};
-                await sqs.SendMessageAsync(queueUrl, barMessage);
+                sqs.SendMessageAsync(queueUrl, barMessage);
                 Console.WriteLine($"The message {barMessage.Value} has been sent");
                 
+                var cancelMessage = new CancelMessage {Value = i};
+                sqs.SendMessageAsync(queueUrl, cancelMessage);
+                Console.WriteLine($"The message {cancelMessage.Value} has been sent");
                 
+                var mut1Message = new MutableOneMessage {Value = i};
+                sqs.SendMessageAsync(queueUrl, mut1Message);
+                Console.WriteLine($"The message {mut1Message.Value} has been sent");
+                
+                var mut2Message = new MutableTwoMessage {Value = i};
+                sqs.SendMessageAsync(queueUrl, mut2Message);
+                Console.WriteLine($"The message {mut2Message.Value} has been sent");
+                
+                var errMessage = new ErrorMessage {Value = i};
+                sqs.SendMessageAsync(queueUrl, errMessage);
+                Console.WriteLine($"The message {errMessage.Value} has been sent");
+                
+                var httpMessage = new HttpMessage {Value = i};
+                sqs.SendMessageAsync(queueUrl, httpMessage);
+                Console.WriteLine($"The message {httpMessage.Value} has been sent");
+                
+                var unkMessage = new UnknownMessage {Value = i};
+                sqs.SendMessageAsync(queueUrl, unkMessage);
+                Console.WriteLine($"The message {unkMessage.Value} has been sent");
 
                 var customRouteMessage = new CustomRouteMessage {Value = $"custom-route{i}"};
-                await sns.PublishAsync(new PublishRequest
+                sns.PublishAsync(new PublishRequest
                 {
                     TopicArn = topicArn,
                     Message = JsonConvert.SerializeObject(customRouteMessage, new JsonSerializerSettings
