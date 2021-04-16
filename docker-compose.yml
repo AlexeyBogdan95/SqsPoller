@@ -10,10 +10,7 @@ services:
       - DATA_DIR=/tmp/localstack/data
     ports:
       - "4566:4566"
-    volumes:
-      - localstack-data:/tmp/localstack
 
 volumes:
-
   localstack-data:
     name: localstack-data
