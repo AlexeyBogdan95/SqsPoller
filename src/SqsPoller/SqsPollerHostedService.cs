@@ -34,13 +34,14 @@ namespace SqsPoller
             var queueUrl = !string.IsNullOrEmpty(_config.QueueUrl)
                 ? _config.QueueUrl
                 : (await _amazonSqsClient.GetQueueUrlAsync(_config.QueueName, stoppingToken)).QueueUrl;
+            using var semaphore = new SemaphoreSlim(_config.MaxNumberOfMessages);
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Handle(queueUrl, stoppingToken);
+                await Handle(queueUrl, semaphore, stoppingToken);
             }
         }
 
-        private async Task Handle(string queueUrl, CancellationToken cancellationToken)
+        private async Task Handle(string queueUrl, SemaphoreSlim semaphore, CancellationToken cancellationToken)
         {
             using var correlationIdScope = _logger.BeginScope(
                 new Dictionary<string, object>
@@ -62,6 +63,7 @@ namespace SqsPoller
                 _logger.LogTrace(
                     "Start processing the message with id {message_id} and ReceiptHandle {receipt_handle}");
 
+                await semaphore.WaitAsync(cancellationToken);
                 await _consumerResolver
                     .Resolve(message, cancellationToken)
                     .ContinueWith(
@@ -78,6 +80,9 @@ namespace SqsPoller
                         async _ => await DeleteMessage(queueUrl, message, cancellationToken),
                         cancellationToken,
                         TaskContinuationOptions.OnlyOnRanToCompletion,
+                        TaskScheduler.Default)
+                    .ContinueWith(
+                        _ => semaphore.Release(),
                         TaskScheduler.Default);
 
                 if (cancellationToken.IsCancellationRequested)

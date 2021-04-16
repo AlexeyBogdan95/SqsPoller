@@ -49,7 +49,7 @@ namespace SqsPoller.Sample.Publisher
             var queueUrl = (await sqs.GetQueueUrlAsync(config.QueueName)).QueueUrl;
             await sns.SubscribeQueueAsync(topicArn, sqs, queueUrl);
             
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 100; i++)
             {
                 var fooMessage = new FooMessage {Value = $"foo{i}"};
                 sns.PublishAsync(topicArn, fooMessage);

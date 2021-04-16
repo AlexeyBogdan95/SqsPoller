@@ -62,5 +62,10 @@ namespace SqsPoller
         /// </summary>
         /// <inheritdoc cref="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-attributes.html"/>
         public List<string> MessageAttributeNames { get; set; } = new List<string> {"All", ".*"};
+
+        /// <summary>
+        /// Gets and sets MaxNumberOfMessages (default 100).
+        /// </summary>
+        public int MaxNumberOfParallelism { get; set; } = 100;
     }
 }
