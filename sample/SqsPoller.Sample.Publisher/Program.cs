@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Amazon;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using Amazon.SQS;
@@ -58,7 +57,7 @@ namespace SqsPoller.Sample.Publisher
                 var barMessage = new BarMessage {Value = $"bar{i}"};
                 sqs.SendMessageAsync(queueUrl, barMessage);
                 Console.WriteLine($"The message {barMessage.Value} has been sent");
-                
+
                 var cancelMessage = new CancelMessage {Value = i};
                 sqs.SendMessageAsync(queueUrl, cancelMessage);
                 Console.WriteLine($"The message {cancelMessage.Value} has been sent");
@@ -82,7 +81,7 @@ namespace SqsPoller.Sample.Publisher
                 var unkMessage = new UnknownMessage {Value = i};
                 sqs.SendMessageAsync(queueUrl, unkMessage);
                 Console.WriteLine($"The message {unkMessage.Value} has been sent");
-
+                
                 var customRouteMessage = new CustomRouteMessage {Value = $"custom-route{i}"};
                 sns.PublishAsync(new PublishRequest
                 {
@@ -102,7 +101,7 @@ namespace SqsPoller.Sample.Publisher
                             }
                         }
                     }
-                });;
+                });
                 Console.WriteLine($"The message {customRouteMessage.Value} has been published");
             }
 

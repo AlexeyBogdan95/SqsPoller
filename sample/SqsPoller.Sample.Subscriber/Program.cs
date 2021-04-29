@@ -35,7 +35,7 @@ namespace SqsPoller.Sample.Subscriber
                         AccessKey = config.AccessKey,
                         SecretKey = config.SecretKey,
                         MaxNumberOfMessages = 10,
-                        MaxNumberOfParallelism = 2
+                        MaxNumberOfParallelism = 1000
                     }, new[]
                     {
                         typeof(BarConsumer),
@@ -54,7 +54,7 @@ namespace SqsPoller.Sample.Subscriber
                         AccessKey = config.AccessKey,
                         SecretKey = config.SecretKey,
                         MaxNumberOfMessages = 10,
-                        MaxNumberOfParallelism = 2
+                        MaxNumberOfParallelism = 1000
                     }, new[] {typeof(BarConsumer)});
                 })
                 .UseSerilog()
