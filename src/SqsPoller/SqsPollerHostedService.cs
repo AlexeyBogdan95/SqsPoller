@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,7 +34,7 @@ namespace SqsPoller
             var queueUrl = !string.IsNullOrEmpty(_config.QueueUrl)
                 ? _config.QueueUrl
                 : (await _amazonSqsClient.GetQueueUrlAsync(_config.QueueName, stoppingToken)).QueueUrl;
-            using var semaphore = new SemaphoreSlim(_config.MaxNumberOfMessages);
+            using var semaphore = new SemaphoreSlim(_config.MaxNumberOfParallelism);
             while (!stoppingToken.IsCancellationRequested)
             {
                 await Handle(queueUrl, semaphore, stoppingToken);
@@ -82,7 +81,7 @@ namespace SqsPoller
                             }
                             else
                             {
-                                DeleteMessage(queueUrl, message, cancellationToken);
+                                DeleteMessage(queueUrl, message);
                             }
 
                             semaphore.Release();
@@ -122,7 +121,8 @@ namespace SqsPoller
             }
         }
 
-        private void DeleteMessage(string queueUrl, Message message, CancellationToken cancellationToken)
+        private void DeleteMessage(
+            string queueUrl, Message message, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -133,8 +133,7 @@ namespace SqsPoller
                         {
                             QueueUrl = queueUrl,
                             ReceiptHandle = message.ReceiptHandle
-                        },
-                        cancellationToken)
+                        }, cancellationToken)
                     .ContinueWith(
                         task =>
                         {

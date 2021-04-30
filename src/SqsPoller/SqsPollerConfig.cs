@@ -64,7 +64,7 @@ namespace SqsPoller
         public List<string> MessageAttributeNames { get; set; } = new List<string> {"All", ".*"};
 
         /// <summary>
-        /// Gets and sets MaxNumberOfMessages (default 100).
+        /// Gets and sets the max number of concurrent message handlers (default 100).
         /// </summary>
         public int MaxNumberOfParallelism { get; set; } = 100;
     }
