@@ -33,7 +33,9 @@ namespace SqsPoller.Sample.Subscriber
                         ServiceUrl = config.ServiceUrl,
                         QueueName = config.QueueName,
                         AccessKey = config.AccessKey,
-                        SecretKey = config.SecretKey
+                        SecretKey = config.SecretKey,
+                        MaxNumberOfMessages = 10,
+                        MaxNumberOfParallelism = 1000
                     }, new[]
                     {
                         typeof(BarConsumer),
@@ -50,7 +52,9 @@ namespace SqsPoller.Sample.Subscriber
                         ServiceUrl = config.ServiceUrl,
                         QueueName = config.SecondQueueName,
                         AccessKey = config.AccessKey,
-                        SecretKey = config.SecretKey
+                        SecretKey = config.SecretKey,
+                        MaxNumberOfMessages = 10,
+                        MaxNumberOfParallelism = 1000
                     }, new[] {typeof(BarConsumer)});
                 })
                 .UseSerilog()
