@@ -4,6 +4,7 @@ using System.Reflection;
 using Amazon;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -29,7 +30,7 @@ namespace SqsPoller
 
             foreach (var type in types)
             {
-                services.AddSingleton(typeof(IConsumer), type);
+                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IConsumer), type));
             }
             
             services.AddTransient<IHostedService>(provider =>
