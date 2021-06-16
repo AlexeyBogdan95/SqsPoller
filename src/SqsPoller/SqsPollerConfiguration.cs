@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using System.Reflection;
 using Amazon;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,17 +10,6 @@ namespace SqsPoller
 {
     public static class SqsPollerConfiguration
     {
-        public static IServiceCollection AddSqsPoller(
-            this IServiceCollection services, SqsPollerConfig config, Assembly[] assembliesWithConsumers)
-        {
-            var types = assembliesWithConsumers
-                .SelectMany(assembly => assembly.GetTypes())
-                .Where(type => type.IsClass && typeof(IConsumer).IsAssignableFrom(type))
-                .ToArray();
-            
-            return AddSqsPoller(services, config, types);
-        }
-
         public static IServiceCollection AddSqsPoller(
             this IServiceCollection services, SqsPollerConfig config, Type[] types)
         {
