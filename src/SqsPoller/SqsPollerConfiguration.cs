@@ -13,17 +13,6 @@ namespace SqsPoller
     public static class SqsPollerConfiguration
     {
         public static IServiceCollection AddSqsPoller(
-            this IServiceCollection services, SqsPollerConfig config, Assembly[] assembliesWithConsumers)
-        {
-            var types = assembliesWithConsumers
-                .SelectMany(assembly => assembly.GetTypes())
-                .Where(type => type.IsClass && typeof(IConsumer).IsAssignableFrom(type))
-                .ToArray();
-            
-            return AddSqsPoller(services, config, types);
-        }
-
-        public static IServiceCollection AddSqsPoller(
             this IServiceCollection services, SqsPollerConfig config, Type[] types)
         {
             services.AddSingleton<IConsumerResolver, ConsumerResolver>();
