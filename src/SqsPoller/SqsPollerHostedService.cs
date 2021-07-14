@@ -128,6 +128,12 @@ namespace SqsPoller
                 _logger.LogTrace("{count} messages received", messagesCount);
                 return result.Messages;
             }
+            catch (OperationCanceledException e)
+            {
+                _logger.LogWarning(e,
+                    "Failed to delete message with id {message_id} and ReceiptHandle {receipt_handle}. Task has been cancelled");
+                return Enumerable.Empty<Message>();
+            }
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to receive messages from the queue"); ;
