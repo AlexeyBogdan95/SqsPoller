@@ -115,7 +115,7 @@ namespace SqsPoller
             catch (OperationCanceledException e)
             {
                 _logger.LogWarning(e,
-                    "Failed to delete message with id {message_id} and ReceiptHandle {receipt_handle}. Task has been cancelled");
+                    "Failed to receive messages. Task has been cancelled");
                 return Enumerable.Empty<Message>();
             }
             catch (Exception e)
@@ -137,6 +137,11 @@ namespace SqsPoller
                             QueueUrl = queueUrl,
                             ReceiptHandle = message.ReceiptHandle
                         }, cancellationToken);
+            }
+            catch (OperationCanceledException e)
+            {
+                _logger.LogWarning(e,
+                    "Failed to delete message with id {message_id} and ReceiptHandle {receipt_handle}. Task has been cancelled");
             }
             catch (Exception ex)
             {
