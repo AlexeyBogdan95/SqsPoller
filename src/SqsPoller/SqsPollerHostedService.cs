@@ -52,7 +52,6 @@ namespace SqsPoller
 
             _logger.LogTrace("Start polling messages from a queue: {queue_url}. correlation_id: {correlation_id}");
             var messages = await GetMessages(queueUrl, cancellationToken);
-            var tasks = new List<Task>();
             foreach (var message in messages)
             {
                 using var messageIdScope = _logger.BeginScope(
@@ -65,25 +64,10 @@ namespace SqsPoller
                     "Start processing the message with id {message_id} and ReceiptHandle {receipt_handle}");
 
                 await semaphore.WaitAsync(cancellationToken);
-                tasks.Add(ProcessEvent(message, cancellationToken, semaphore, queueUrl));
+                ProcessEvent(message, cancellationToken, semaphore, queueUrl);
 
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    continue;
-                }
-                
-                await FinishTasks(tasks);
-                return;
-            }
-
-            await FinishTasks(tasks);
-        }
-
-        private static async Task FinishTasks(IReadOnlyCollection<Task> tasks)
-        {
-            if (tasks.Any())
-            {
-                await Task.WhenAll(tasks);
+                if (cancellationToken.IsCancellationRequested)
+                    return;
             }
         }
 
@@ -92,7 +76,7 @@ namespace SqsPoller
             try
             {
                 await _consumerResolver.Resolve(message, cancellationToken);
-                await DeleteMessage(queueUrl, message, cancellationToken);
+                DeleteMessage(queueUrl, message, cancellationToken);
             }
             catch (OperationCanceledException e)
             {
