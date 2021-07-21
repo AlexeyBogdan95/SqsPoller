@@ -1,6 +1,6 @@
-name: Publish Nuget pre-release package
+name: Publish Nuget prerelease package
 
-on: 
+on:
   pull_request:
     branches:
       master
@@ -13,19 +13,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
-                
+
       - name: Build
         run: dotnet build --configuration Release --version-suffix -prerelease-$(date +%Y%m%d%H%M%S)
         shell: bash
-        
+
       - name: Publish SqsPoller Nuget pre-release package
+        shell: bash
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push src/SqsPoller/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k $env.NUGET_API_KEY -s https://api.nuget.org/v3/index.json
-        shell: bash
-        
+        run: dotnet nuget push src/SqsPoller/bin/Release/SqsPoller.*.*.*-prerelease-*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+
       - name: Publish SqsPoller.Extensions.Publisher Nuget pre-release package
+        shell: bash
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push src/SqsPoller.Extensions.Publisher/bin/Release/SqsPoller.Extensions.Publisher.*.*.*-prerelease-*.nupkg -k $env.NUGET_API_KEY -s https://api.nuget.org/v3/index.json
-        shell: bash
+        run: dotnet nuget push src/SqsPoller.Extensions.Publisher/bin/Release/SqsPoller.Extensions.Publisher.*.*.*-prerelease-*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json

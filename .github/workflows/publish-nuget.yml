@@ -1,0 +1,31 @@
+name: Publish Nuget package
+
+on: 
+  push:
+    branches:
+      master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+                
+      - name: Build
+        run: dotnet build --configuration Release
+        shell: bash
+        
+      - name: Publish SqsPoller Nuget pre-release package
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push src/SqsPoller/bin/Release/SqsPoller.*.*.*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+        
+      - name: Publish SqsPoller.Extensions.Publisher Nuget pre-release package
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push src/SqsPoller.Extensions.Publisher/bin/Release/SqsPoller.Extensions.Publisher.*.*.*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
