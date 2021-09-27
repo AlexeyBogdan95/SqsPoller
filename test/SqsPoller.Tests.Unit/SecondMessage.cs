@@ -1,6 +1,6 @@
 namespace SqsPoller.Tests.Unit
 {
-    public class SecondMessage
+    public record SecondMessage
     {
         public string Value { get; set; } = string.Empty;
     }

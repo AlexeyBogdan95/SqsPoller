@@ -14,13 +14,13 @@ namespace SqsPoller.Tests.Unit
 
         public Task Consume(FirstMessage message, CancellationToken cancellationToken)
         {
-            _fakeService.FirstMethod();
+            _fakeService.FirstMethod(message);
             return Task.CompletedTask;
         }
 
         public Task Consume(SecondMessage message, CancellationToken cancellationToken)
         {
-            _fakeService.SecondMethod();
+            _fakeService.SecondMethod(message);
             return Task.CompletedTask;
         }
     }

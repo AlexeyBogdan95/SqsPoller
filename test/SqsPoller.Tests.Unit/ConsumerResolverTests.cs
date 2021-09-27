@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,8 +39,10 @@ namespace SqsPoller.Tests.Unit
             await consumerResolver.Resolve(sqsMessage, CancellationToken.None);
 
             //Assert
-            fakeService.Received(1).FirstMethod();
-            fakeService.DidNotReceive().SecondMethod();
+            fakeService.Received(1).FirstMethod(Arg.Is(message));
+            fakeService.DidNotReceive().FirstMethod(Arg.Any<FirstCompressedMessage>());
+            fakeService.DidNotReceive().SecondMethod(Arg.Any<SecondMessage>());
+            fakeService.DidNotReceive().SecondMethod(Arg.Any<SecondCompressedMessage>());
         }
 
         [Fact]
@@ -68,8 +71,10 @@ namespace SqsPoller.Tests.Unit
             await consumerResolver.Resolve(sqsMessage, CancellationToken.None);
 
             //Assert
-            fakeService.DidNotReceive().FirstMethod();
-            fakeService.Received(1).SecondMethod();
+            fakeService.DidNotReceive().FirstMethod(Arg.Any<FirstMessage>());
+            fakeService.DidNotReceive().FirstMethod(Arg.Any<FirstCompressedMessage>());
+            fakeService.Received(1).SecondMethod(Arg.Is(message));
+            fakeService.DidNotReceive().SecondMethod(Arg.Any<SecondCompressedMessage>());
         }
 
         [Fact]
@@ -135,8 +140,10 @@ namespace SqsPoller.Tests.Unit
             await consumerResolver.Resolve(secondSqsMessage, CancellationToken.None);
 
             //Assert
-            fakeService.Received(1).FirstMethod();
-            fakeService.Received(1).SecondMethod();
+            fakeService.Received(1).FirstMethod(Arg.Is(firstMessage));
+            fakeService.Received(1).SecondMethod(Arg.Is(secondMessage));
+            fakeService.DidNotReceive().FirstMethod(Arg.Any<FirstCompressedMessage>());
+            fakeService.DidNotReceive().SecondMethod(Arg.Any<SecondCompressedMessage>());
         }
         
         [Fact]
@@ -175,8 +182,56 @@ namespace SqsPoller.Tests.Unit
             await consumerResolver.Resolve(secondSqsMessage, CancellationToken.None);
 
             //Assert
-            fakeService.Received(2).FirstMethod();
-            fakeService.Received(2).SecondMethod();
+            fakeService.Received(2).FirstMethod(Arg.Is(firstMessage));
+            fakeService.Received(2).SecondMethod(Arg.Is(secondMessage));
+            fakeService.DidNotReceive().FirstMethod(Arg.Any<FirstCompressedMessage>());
+            fakeService.DidNotReceive().SecondMethod(Arg.Any<SecondCompressedMessage>());
+        }
+
+        [Fact]
+        public async Task Resolve_ConsumersFound_TwoMethodsAreInvokedWithDecompressedParams()
+        {
+            //Arrange
+            var fakeService = Substitute.For<IFakeService>();
+            var fakeLogger = Substitute.For<ILogger<ConsumerResolver>>();
+            var firstConsumer = new FirstCompressedMessageConsumer(fakeService);
+            var secondConsumer = new SecondCompressedMessageConsumer(fakeService);
+            var consumers = new IConsumer[] { firstConsumer, secondConsumer };
+            var consumerResolver = new ConsumerResolver(consumers, fakeLogger);
+
+            var firstMessage = new FirstCompressedMessage { FirstValue = "Some Test Value", SecondValue = 23 };
+            var firstMessageEncodedBody = "H4sIAAAAAAAACqvm5VJQUErLLCouCUvMKU1VslJQCs7PTVUISS0uUYAI6YDVFKcm5+elwBQZGfNy1QIAMWRysz0AAAA=";
+            var firstSqsMessage = new Message
+            {
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {"MessageType", new MessageAttributeValue {StringValue = nameof(FirstCompressedMessage)}},
+                    {"ContentEncoding", new MessageAttributeValue{StringValue = "gzip"}}
+                },
+                Body = firstMessageEncodedBody
+            };
+
+            var secondMessage = new SecondCompressedMessage { FirstValue = new DateTime(2021, 12, 12), SecondValue = 4.53m };
+            var secondMessageEncodedBody = "H4sIAAAAAAAACqvm5VJQUErLLCouCUvMKU1VslJQMjIwMtQ1NAKiEAMDKzBS0gGrK05Nzs9LgSk00TM15uWqBQDCQr7xQwAAAA==";
+            var secondSqsMessage = new Message
+            {
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {"MessageType", new MessageAttributeValue {StringValue = nameof(SecondCompressedMessage)}},
+                    {"ContentEncoding", new MessageAttributeValue{StringValue = "gzip"}}
+                },
+                Body = secondMessageEncodedBody
+            };
+
+            //Act
+            await consumerResolver.Resolve(firstSqsMessage, CancellationToken.None);
+            await consumerResolver.Resolve(secondSqsMessage, CancellationToken.None);
+
+            //Assert
+            fakeService.DidNotReceive().FirstMethod(Arg.Any<FirstMessage>());
+            fakeService.DidNotReceive().SecondMethod(Arg.Any<SecondMessage>());
+            fakeService.Received(1).FirstMethod(Arg.Is(firstMessage));
+            fakeService.Received(1).SecondMethod(Arg.Is(secondMessage));
         }
     }
 }

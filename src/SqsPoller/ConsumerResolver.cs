@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Compression;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS.Model;
@@ -60,15 +63,20 @@ namespace SqsPoller
                     .FirstOrDefault(pair => pair.Key == consumerMapping.mapping.MessageAttribute)
                     .Value?.StringValue;
 
+                var contentEncoding = message.MessageAttributes
+                    .FirstOrDefault(pair => pair.Key == "ContentEncoding")
+                    .Value?.StringValue;
+
                 string messageBody;
                 if (messageType != null && messageType == consumerMapping.mapping.Value)
                 {
                     _logger.LogTrace("Message Type is {message_type}", messageType);
-                    messageBody = message.Body;
+                    messageBody = contentEncoding == "gzip" ? await Decompress(message.Body) : message.Body;
                 }
                 else
                 {
-                    var body = JsonConvert.DeserializeObject<MessageBody>(message.Body);
+                    var bodyString = contentEncoding == "gzip" ? await Decompress(message.Body) : message.Body;
+                    var body = JsonConvert.DeserializeObject<MessageBody>(bodyString);
                     messageType = body.MessageAttributes
                         .FirstOrDefault(pair => pair.Key == consumerMapping.mapping.MessageAttribute).Value?.Value;
 
@@ -76,7 +84,7 @@ namespace SqsPoller
                         continue;
 
                     _logger.LogTrace("Message Type is {message_type}", messageType);
-                    messageBody = body.Message;
+                    messageBody = contentEncoding == "gzip" ? await Decompress(body.Message) : body.Message;
                 }
 
                 var deserializedMessage = JsonConvert.DeserializeObject(messageBody, consumerMapping.messageType);
@@ -101,6 +109,16 @@ namespace SqsPoller
             { 
                 throw new ConsumerNotFoundException(message.MessageId);
             }
+        }
+
+        private static async Task<string> Decompress(string message)
+        {
+            var bytes = Convert.FromBase64String(message);
+            using var compressedStream = new MemoryStream(bytes);
+            using var decompressedStream = new MemoryStream();
+            using var gzip = new GZipStream(compressedStream, CompressionMode.Decompress);
+            await gzip.CopyToAsync(decompressedStream);
+            return Encoding.UTF8.GetString(decompressedStream.ToArray());
         }
     }
 }
