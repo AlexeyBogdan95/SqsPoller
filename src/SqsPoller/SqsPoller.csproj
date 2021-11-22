@@ -12,7 +12,6 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
-        
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -27,6 +26,7 @@
         <PackageReference Include="AWSSDK.SQS" Version="3.7.0.14" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+        <PackageReference Include="System.Text.Json" Version="6.0.0" />
     </ItemGroup>
 
 </Project>
