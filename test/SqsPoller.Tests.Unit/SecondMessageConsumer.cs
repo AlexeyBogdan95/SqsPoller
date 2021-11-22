@@ -14,7 +14,7 @@ namespace SqsPoller.Tests.Unit
         
         public Task Consume(SecondMessage message, CancellationToken cancellationToken)
         {
-            _fakeService.SecondMethod();
+            _fakeService.SecondMethod(message.Value);
             return Task.CompletedTask;
         }
     }

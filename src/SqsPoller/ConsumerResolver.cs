@@ -15,6 +15,10 @@ namespace SqsPoller
     {
         private readonly IEnumerable<(IConsumer instance, Type messageType, SqsConsumer mapping)> _consumersMapping;
         private readonly ILogger<ConsumerResolver> _logger;
+        private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
 
         public ConsumerResolver(IEnumerable<IConsumer> consumers,
             ILogger<ConsumerResolver> logger)
@@ -68,7 +72,7 @@ namespace SqsPoller
                 }
                 else
                 {
-                    var body = JsonSerializer.Deserialize<MessageBody>(message.Body);
+                    var body = JsonSerializer.Deserialize<MessageBody>(message.Body, _options);
                     messageType = body.MessageAttributes
                         .FirstOrDefault(pair => pair.Key == consumerMapping.mapping.MessageAttribute).Value?.Value;
 
@@ -79,7 +83,7 @@ namespace SqsPoller
                     messageBody = body.Message;
                 }
 
-                var deserializedMessage = JsonSerializer.Deserialize(messageBody, consumerMapping.messageType);
+                var deserializedMessage = JsonSerializer.Deserialize(messageBody, consumerMapping.messageType, _options);
                 var @params = new[]
                 {
                     deserializedMessage,
