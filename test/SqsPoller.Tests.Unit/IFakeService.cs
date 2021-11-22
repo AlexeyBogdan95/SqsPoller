@@ -2,7 +2,7 @@ namespace SqsPoller.Tests.Unit
 {
     public interface IFakeService
     {
-        void FirstMethod();
-        void SecondMethod();
+        void FirstMethod(string value);
+        void SecondMethod(string value);
     }
 }
