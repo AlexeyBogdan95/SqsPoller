@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using Amazon.SQS;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using SqsPoller.Extensions.Publisher;
 
 namespace SqsPoller.Sample.Publisher
@@ -86,10 +85,10 @@ namespace SqsPoller.Sample.Publisher
                 sns.PublishAsync(new PublishRequest
                 {
                     TopicArn = topicArn,
-                    Message = JsonConvert.SerializeObject(customRouteMessage, new JsonSerializerSettings
+                    Message = JsonSerializer.Serialize(customRouteMessage, new JsonSerializerOptions
                     {
-                        Formatting = Formatting.Indented,
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                        WriteIndented = true,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                     }),
                     MessageAttributes = new Dictionary<string, MessageAttributeValue>
                     {

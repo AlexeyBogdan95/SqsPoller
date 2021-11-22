@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS.Model;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace SqsPoller
 {
@@ -68,7 +68,7 @@ namespace SqsPoller
                 }
                 else
                 {
-                    var body = JsonConvert.DeserializeObject<MessageBody>(message.Body);
+                    var body = JsonSerializer.Deserialize<MessageBody>(message.Body);
                     messageType = body.MessageAttributes
                         .FirstOrDefault(pair => pair.Key == consumerMapping.mapping.MessageAttribute).Value?.Value;
 
@@ -79,7 +79,7 @@ namespace SqsPoller
                     messageBody = body.Message;
                 }
 
-                var deserializedMessage = JsonConvert.DeserializeObject(messageBody, consumerMapping.messageType);
+                var deserializedMessage = JsonSerializer.Deserialize(messageBody, consumerMapping.messageType);
                 var @params = new[]
                 {
                     deserializedMessage,
