@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <PackageId>SqsPoller</PackageId>
         <Version>0.14.0$(VersionSuffix)</Version>
         <Authors>Alexey Bogdan</Authors>
@@ -10,7 +10,6 @@
         <RepositoryUrl>https://github.com/AlexeyBogdan95/SqsPoller</RepositoryUrl>
         <PackageProjectUrl>https://www.nuget.org/packages/SqsPoller/</PackageProjectUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <LangVersion>8</LangVersion>
         <Nullable>enable</Nullable>
         
     </PropertyGroup>
