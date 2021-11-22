@@ -1,22 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>SqsPoller.Extensions.Publisher</PackageId>
-        <Version>0.14.0$(VersionSuffix)</Version>
+        <Version>0.14.1$(VersionSuffix)</Version>
         <Authors>Alexey Bogdan</Authors>
         <Company>Alexey Bogdan</Company>
         <Description>A small library that helps ASP.NET Core applications easily consume messages from a SQS queue</Description>
         <RepositoryUrl>https://github.com/AlexeyBogdan95/SqsPoller</RepositoryUrl>
         <PackageProjectUrl>https://www.nuget.org/packages/SqsPoller/</PackageProjectUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.0.14" />
       <PackageReference Include="AWSSDK.SQS" Version="3.7.0.14" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="System.Text.Json" Version="6.0.0" />
     </ItemGroup>
 
 </Project>

@@ -1,17 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-
 namespace SqsPoller.Extensions.Publisher
 {
     public static class AmazonSqsExtensions
     {
-        public static async Task<SendMessageResponse> SendMessageAsync<T>(
+        private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        
+        public static Task<SendMessageResponse> SendMessageAsync<T>(
             this IAmazonSQS amazonSqsClient,
             string queueUrl,
             T message,
@@ -20,13 +24,9 @@ namespace SqsPoller.Extensions.Publisher
         {
             var messageBody = new MessageBody
             {
-                Message = JsonConvert.SerializeObject(
+                Message = JsonSerializer.Serialize(
                     message,
-                    new JsonSerializerSettings
-                    {
-                        Formatting = Formatting.Indented,
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
-                    }),
+                    _options),
                 MessageAttributes = new Dictionary<string, MessageAttribute>
                 {
                     {
@@ -39,15 +39,15 @@ namespace SqsPoller.Extensions.Publisher
                 }
             };
 
-            return await amazonSqsClient.SendMessageAsync(new SendMessageRequest
+            return amazonSqsClient.SendMessageAsync(new SendMessageRequest
             {
                 QueueUrl = queueUrl,
-                MessageBody = JsonConvert.SerializeObject(messageBody),
+                MessageBody = JsonSerializer.Serialize(messageBody),
                 DelaySeconds = delayInSeconds
             }, cancellationToken);
         }
 
-        public static async Task<SendMessageResponse> SendMessageAsync(
+        public static Task<SendMessageResponse> SendMessageAsync(
             this IAmazonSQS amazonSqsClient,
             string queueUrl,
             object message,
@@ -57,13 +57,9 @@ namespace SqsPoller.Extensions.Publisher
         {
             var messageBody = new MessageBody
             {
-                Message = JsonConvert.SerializeObject(
+                Message = JsonSerializer.Serialize(
                     message,
-                    new JsonSerializerSettings
-                    {
-                        Formatting = Formatting.Indented,
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
-                    }),
+                    _options),
                 MessageAttributes = new Dictionary<string, MessageAttribute>
                 {
                     {
@@ -76,10 +72,10 @@ namespace SqsPoller.Extensions.Publisher
                 }
             };
             
-            return await amazonSqsClient.SendMessageAsync(new SendMessageRequest
+            return amazonSqsClient.SendMessageAsync(new SendMessageRequest
             {
                 QueueUrl = queueUrl,
-                MessageBody = JsonConvert.SerializeObject(messageBody),
+                MessageBody = JsonSerializer.Serialize(messageBody),
                 DelaySeconds = delayInSeconds
             }, cancellationToken);
         }
