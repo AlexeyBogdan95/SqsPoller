@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace SqsPoller
 {
@@ -67,5 +69,16 @@ namespace SqsPoller
         /// Gets and sets the max number of concurrent message handlers (default 100).
         /// </summary>
         public int MaxNumberOfParallelism { get; set; } = 100;
+
+        /// <summary>
+        /// Gets and sets a log level for default log messages when an exception is caught
+        /// </summary>
+        public LogLevel ExceptionDefaultMessageLogLevel { get; set; } = LogLevel.Error;
+        
+        /// <summary>
+        /// Gets and sets a custom exception handler when it is caught.
+        /// Default log message is applied.
+        /// </summary>
+        public Action<Exception>? OnException { get; set; }
     }
 }
