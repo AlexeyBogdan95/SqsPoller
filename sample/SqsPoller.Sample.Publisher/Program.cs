@@ -106,8 +106,14 @@ namespace SqsPoller.Sample.Publisher
 
             await sqs.CreateQueueAsync(config.SecondQueueName);
             var secondQueueUrl = (await sqs.GetQueueUrlAsync(config.SecondQueueName)).QueueUrl;
-            var barMessageForSecondQueue = new BarMessage {Value = $"barSecondQueue"};
+            var barMessageForSecondQueue = new BarMessage {Value = "barSecondQueue"};
             await sqs.SendMessageAsync(secondQueueUrl, barMessageForSecondQueue);
+            Console.WriteLine($"The message {barMessageForSecondQueue.Value} has been sent");
+            
+            await sqs.CreateQueueAsync(config.ThirdQueueName);
+            var thirdQueueUrl = (await sqs.GetQueueUrlAsync(config.ThirdQueueName)).QueueUrl;
+            var operationCancelledMessage = new OperationCancelledMessage();
+            await sqs.SendMessageAsync(thirdQueueUrl, operationCancelledMessage);
             Console.WriteLine($"The message {barMessageForSecondQueue.Value} has been sent");
         }
     }

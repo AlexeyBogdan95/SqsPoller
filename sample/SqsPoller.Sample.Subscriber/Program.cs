@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace SqsPoller.Sample.Subscriber
@@ -56,6 +57,18 @@ namespace SqsPoller.Sample.Subscriber
                         MaxNumberOfMessages = 10,
                         MaxNumberOfParallelism = 1000
                     }, new[] {typeof(BarConsumer)});
+
+                    services.AddSqsPoller(new SqsPollerConfig
+                    {
+                        ServiceUrl = config.ServiceUrl,
+                        QueueName = config.ThirdQueueName,
+                        AccessKey = config.AccessKey,
+                        SecretKey = config.SecretKey,
+                        MaxNumberOfMessages = 10,
+                        MaxNumberOfParallelism = 1000,
+                        ExceptionDefaultMessageLogLevel = LogLevel.Information,
+                        OnException = e => Log.Logger.Error(e, "OnException:")
+                    }, new[] {typeof(OperationCancelledConsumer)});
                 })
                 .UseSerilog()
                 .UseConsoleLifetime();

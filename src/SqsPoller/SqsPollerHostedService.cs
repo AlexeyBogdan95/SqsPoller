@@ -10,15 +10,15 @@ using Microsoft.Extensions.Logging;
 
 namespace SqsPoller
 {
-    internal class SqsPollerHostedService: BackgroundService
+    public class SqsPollerHostedService: BackgroundService
     {
-        private readonly AmazonSQSClient _amazonSqsClient;
+        private readonly IAmazonSQS _amazonSqsClient;
         private readonly SqsPollerConfig _config;
         private readonly IConsumerResolver _consumerResolver;
         private readonly ILogger<SqsPollerHostedService> _logger;
 
         public SqsPollerHostedService(
-            AmazonSQSClient amazonSqsClient,
+            IAmazonSQS amazonSqsClient,
             SqsPollerConfig config,
             IConsumerResolver consumerResolver,
             ILogger<SqsPollerHostedService> logger)
@@ -64,29 +64,32 @@ namespace SqsPoller
                     "Start processing the message with id {message_id} and ReceiptHandle {receipt_handle}");
 
                 await semaphore.WaitAsync(cancellationToken);
-                ProcessEvent(message, cancellationToken, semaphore, queueUrl);
-
+                HandleMessage(message, cancellationToken, semaphore, queueUrl);
                 if (cancellationToken.IsCancellationRequested)
                     return;
             }
         }
 
-        private async Task ProcessEvent(Message message, CancellationToken cancellationToken, SemaphoreSlim semaphore, string queueUrl)
+        public async Task HandleMessage(Message message, CancellationToken cancellationToken, SemaphoreSlim semaphore, string queueUrl)
         {
             try
             {
+                _logger.LogTrace("Handling message {message_id} {receipt_handle}");
                 await _consumerResolver.Resolve(message, cancellationToken);
-                DeleteMessage(queueUrl, message, cancellationToken);
-            }
-            catch (OperationCanceledException e)
-            {
-                _logger.LogWarning(e,
-                    "Failed to handle message with id {message_id} and ReceiptHandle {receipt_handle}. Task has been cancelled");
+                _logger.LogTrace("Message {message_id} {receipt_handle} has been handled");
+
+                _logger.LogTrace("Deleting the message with id {message_id} and ReceiptHandle {receipt_handle}");
+                _amazonSqsClient.DeleteMessageAsync(
+                    new DeleteMessageRequest
+                    {
+                        QueueUrl = queueUrl,
+                        ReceiptHandle = message.ReceiptHandle
+                    }, cancellationToken);
             }
             catch (Exception e)
             {
-                _logger.LogError(e,
-                    "Failed to handle message with id {message_id} and ReceiptHandle {receipt_handle}");
+                _logger.Log(_config.ExceptionDefaultMessageLogLevel, e, "Failed to handle message {message_id} {receipt_handle}");
+                _config.OnException?.Invoke(e);
             }
             finally
             {
@@ -112,40 +115,10 @@ namespace SqsPoller
                 _logger.LogTrace("{count} messages received", messagesCount);
                 return result.Messages;
             }
-            catch (OperationCanceledException e)
-            {
-                _logger.LogWarning(e,
-                    "Failed to receive messages. Task has been cancelled");
-                return Enumerable.Empty<Message>();
-            }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to receive messages from the queue"); ;
+                _logger.Log(_config.ExceptionDefaultMessageLogLevel, e, "Failed to receive messages from the queue"); ;
                 return Enumerable.Empty<Message>();
-            }
-        }
-
-        private async Task DeleteMessage(
-            string queueUrl, Message message, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                _logger.LogTrace("Deleting the message with id {message_id} and ReceiptHandle {receipt_handle}");
-                await _amazonSqsClient.DeleteMessageAsync(
-                        new DeleteMessageRequest
-                        {
-                            QueueUrl = queueUrl,
-                            ReceiptHandle = message.ReceiptHandle
-                        }, cancellationToken);
-            }
-            catch (OperationCanceledException e)
-            {
-                _logger.LogWarning(e,
-                    "Failed to delete message with id {message_id} and ReceiptHandle {receipt_handle}. Task has been cancelled");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to delete message {message_id} from the queue", message.MessageId);
             }
         }
     }
