@@ -67,7 +67,7 @@ namespace SqsPoller.Sample.Subscriber
                         MaxNumberOfMessages = 10,
                         MaxNumberOfParallelism = 1000,
                         ExceptionDefaultMessageLogLevel = LogLevel.Information,
-                        OnException = e => Log.Logger.Error(e, "OnException:")
+                        OnException = (e, m) => Log.Logger.Error(e, m)
                     }, new[] {typeof(OperationCancelledConsumer)});
                 })
                 .UseSerilog()
