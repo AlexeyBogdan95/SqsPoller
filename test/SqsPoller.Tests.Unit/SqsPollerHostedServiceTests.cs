@@ -89,5 +89,4 @@ public class SqsPollerHostedServiceTests
             "Failed to handle message {message_id} {receipt_handle}");
         onExceptionTriggered.ShouldBeTrue();
     }
-        
 }

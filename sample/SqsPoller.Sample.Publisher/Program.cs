@@ -38,11 +38,11 @@ namespace SqsPoller.Sample.Publisher
                         ServiceURL = config.ServiceUrl
                     }));
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            var sns = serviceProvider.GetService<IAmazonSimpleNotificationService>();
+            var sns = serviceProvider.GetRequiredService<IAmazonSimpleNotificationService>();
             var x = await sns.CreateTopicAsync(config.TopicName);
             var topicArn = x.TopicArn;
 
-            var sqs = serviceProvider.GetService<IAmazonSQS>();
+            var sqs = serviceProvider.GetRequiredService<IAmazonSQS>();
             await sqs.CreateQueueAsync(config.QueueName);
             var queueUrl = (await sqs.GetQueueUrlAsync(config.QueueName)).QueueUrl;
             await sns.SubscribeQueueAsync(topicArn, sqs, queueUrl);
