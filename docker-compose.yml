@@ -9,7 +9,7 @@ services:
         - CMD
         - bash
         - -c
-        - awslocal sqs get-queue-url --queue-name ccs-compliance-customers
+        - awslocal sqs get-queue-url --queue-name ThirdSqsPollerQueue
       interval: 1s
       timeout: 10s
       retries: 5
