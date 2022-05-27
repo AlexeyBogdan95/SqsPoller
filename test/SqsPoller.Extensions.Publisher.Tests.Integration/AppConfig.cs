@@ -4,6 +4,6 @@ namespace SqsPoller.Extensions.Publisher.Tests.Integration
     {
         public const string AccessKey = "1";
         public const string SecretKey = "1";
-        public const string ServiceUrl = "http://host.docker.internal:4566";
+        public const string ServiceUrl = "http://localhost:4566";
     }
 }
