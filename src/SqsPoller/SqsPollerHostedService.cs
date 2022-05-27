@@ -88,15 +88,17 @@ namespace SqsPoller
                 _amazonSqsClient.DeleteMessageAsync(deleteRequest, cancellationToken)
                     .ContinueWith(deleteMessageTask =>
                     {
+                        _logger.LogTrace("Message {message_id} {receipt_handle} has been deleted");
                         if (deleteMessageTask.IsFaulted)
                         {
-                            _config.OnException?.Invoke(deleteMessageTask.Exception, "Failed to delete message with id {message_id} and ReceiptHandle {receipt_handle}");
+                            _config.OnException?.Invoke(deleteMessageTask.Exception,
+                                $"Failed to delete message with id {message.MessageId} and ReceiptHandle {message.ReceiptHandle}");
                         }
                     }, cancellationToken);
             }
             catch (Exception e)
             {
-                _config.OnException?.Invoke(e, "Failed to handle message {message_id} {receipt_handle}");
+                _config.OnException?.Invoke(e, $"Failed to handle message {message.MessageId} {message.ReceiptHandle}");
             }
             finally
             {
