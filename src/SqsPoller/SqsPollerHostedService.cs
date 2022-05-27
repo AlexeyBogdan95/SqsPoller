@@ -24,9 +24,10 @@ namespace SqsPoller
             ILogger<SqsPollerHostedService> logger)
         {
             _amazonSqsClient = amazonSqsClient;
-            _config = config;
             _consumerResolver = consumerResolver;
             _logger = logger;
+            _config = config;
+            _config.OnException ??= (e, m) => logger.Log(config.ExceptionDefaultMessageLogLevel, e, m);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
