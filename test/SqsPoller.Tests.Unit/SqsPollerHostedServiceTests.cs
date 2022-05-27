@@ -25,13 +25,16 @@ public class SqsPollerHostedServiceTests
         var hostedService = new SqsPollerHostedService(sqsClient, config, consumerResolver, logger);
         
         //Act
-        await hostedService.HandleMessage(new Message(), CancellationToken.None, new SemaphoreSlim(20), "");
+        await hostedService.HandleMessage(new Message()
+        {
+            MessageId = "test-message-id",
+            ReceiptHandle = "test-receipt-handle"
+        }, CancellationToken.None, new SemaphoreSlim(20), "");
 
         //Assert
-        logger.Received(1).Log(
-            Arg.Is<LogLevel>(x => x == LogLevel.Error),
-            Arg.Any<Exception>(), 
-            "Failed to handle message {message_id} {receipt_handle}");
+        logger.Received(1).Log(LogLevel.Error,
+            Arg.Any<Exception>(),
+            "Failed to handle message test-message-id test-receipt-handle");
     }
     
     [Theory]
@@ -53,13 +56,16 @@ public class SqsPollerHostedServiceTests
         var hostedService = new SqsPollerHostedService(sqsClient, config, consumerResolver, logger);
         
         //Act
-        await hostedService.HandleMessage(new Message(), CancellationToken.None, new SemaphoreSlim(20), "");
+        await hostedService.HandleMessage(new Message()
+        {
+            MessageId = "test-message-id",
+            ReceiptHandle = "test-receipt-handle"
+        }, CancellationToken.None, new SemaphoreSlim(20), "");
 
         //Assert
-        logger.Received(1).Log(
-            Arg.Is<LogLevel>(x => x == logLevel),
+        logger.Received(1).Log(logLevel,
             Arg.Any<Exception>(), 
-            "Failed to handle message {message_id} {receipt_handle}");
+            "Failed to handle message test-message-id test-receipt-handle");
     }
 
     [Fact]
@@ -80,13 +86,17 @@ public class SqsPollerHostedServiceTests
         var hostedService = new SqsPollerHostedService(sqsClient, config, consumerResolver, logger);
         
         //Act
-        await hostedService.HandleMessage(new Message(), CancellationToken.None, new SemaphoreSlim(20), "");
+        await hostedService.HandleMessage(new Message()
+        {
+            MessageId = "test-message-id",
+            ReceiptHandle = "test-receipt-handle"
+        }, CancellationToken.None, new SemaphoreSlim(20), "");
 
         //Assert
         logger.DidNotReceive().Log(
             Arg.Any<LogLevel>(),
             Arg.Any<Exception>(),
-            "Failed to handle message {message_id} {receipt_handle}");
+            "Failed to handle message test-message-id test-receipt-handle");
         onExceptionTriggered.ShouldBeTrue();
     }
 }
