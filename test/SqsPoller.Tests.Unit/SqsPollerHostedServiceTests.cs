@@ -72,7 +72,7 @@ public class SqsPollerHostedServiceTests
         var config = new SqsPollerConfig
         {
             ExceptionDefaultMessageLogLevel = LogLevel.Warning,
-            OnException = _ => { onExceptionTriggered = true; }
+            OnException = (e, m) => { onExceptionTriggered = true; }
         };
         var consumerResolver = Substitute.For<IConsumerResolver>();
         consumerResolver.Resolve(Arg.Any<Message>(), CancellationToken.None).Throws<Exception>();
