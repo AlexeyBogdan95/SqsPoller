@@ -22,6 +22,12 @@ namespace SqsPoller
             
             services.AddTransient<IHostedService>(provider =>
             {
+                if (config.OnException == default)
+                {
+                    var logger = provider.GetRequiredService<ILogger<SqsPollerHostedService>>();
+                    config.OnException = (e, m) => logger.Log(config.ExceptionDefaultMessageLogLevel, e, m);
+                }
+                
                 AmazonSQSClient sqsClient;
                 if (!string.IsNullOrEmpty(config.AccessKey) &&
                     !string.IsNullOrEmpty(config.SecretKey))

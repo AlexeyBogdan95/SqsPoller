@@ -83,8 +83,8 @@ public class SqsPollerHostedServiceTests
         await hostedService.HandleMessage(new Message(), CancellationToken.None, new SemaphoreSlim(20), "");
 
         //Assert
-        logger.Received(1).Log(
-            Arg.Is<LogLevel>(x => x == LogLevel.Warning),
+        logger.DidNotReceive().Log(
+            Arg.Any<LogLevel>(),
             Arg.Any<Exception>(),
             "Failed to handle message {message_id} {receipt_handle}");
         onExceptionTriggered.ShouldBeTrue();
