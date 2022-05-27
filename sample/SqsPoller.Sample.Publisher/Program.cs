@@ -37,54 +37,49 @@ namespace SqsPoller.Sample.Publisher
                     {
                         ServiceURL = config.ServiceUrl
                     }));
+
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var sns = serviceProvider.GetRequiredService<IAmazonSimpleNotificationService>();
-            var x = await sns.CreateTopicAsync(config.TopicName);
-            var topicArn = x.TopicArn;
-
             var sqs = serviceProvider.GetRequiredService<IAmazonSQS>();
-            await sqs.CreateQueueAsync(config.QueueName);
-            var queueUrl = (await sqs.GetQueueUrlAsync(config.QueueName)).QueueUrl;
-            await sns.SubscribeQueueAsync(topicArn, sqs, queueUrl);
             
             for (var i = 0; i < 100; i++)
             {
                 var fooMessage = new FooMessage {Value = $"foo{i}"};
-                sns.PublishAsync(topicArn, fooMessage);
+                sns.PublishAsync(config.TopicArn, fooMessage);
                 Console.WriteLine($"The message {fooMessage.Value} has been published");
 
                 var barMessage = new BarMessage {Value = $"bar{i}"};
-                sqs.SendMessageAsync(queueUrl, barMessage);
+                sqs.SendMessageAsync(config.QueueUrl, barMessage);
                 Console.WriteLine($"The message {barMessage.Value} has been sent");
 
                 var cancelMessage = new CancelMessage {Value = i};
-                sqs.SendMessageAsync(queueUrl, cancelMessage);
+                sqs.SendMessageAsync(config.QueueUrl, cancelMessage);
                 Console.WriteLine($"The message {cancelMessage.Value} has been sent");
                 
                 var mut1Message = new MutableOneMessage {Value = i};
-                sqs.SendMessageAsync(queueUrl, mut1Message);
+                sqs.SendMessageAsync(config.QueueUrl, mut1Message);
                 Console.WriteLine($"The message {mut1Message.Value} has been sent");
                 
                 var mut2Message = new MutableTwoMessage {Value = i};
-                sqs.SendMessageAsync(queueUrl, mut2Message);
+                sqs.SendMessageAsync(config.QueueUrl, mut2Message);
                 Console.WriteLine($"The message {mut2Message.Value} has been sent");
                 
                 var errMessage = new ErrorMessage {Value = i};
-                sqs.SendMessageAsync(queueUrl, errMessage);
+                sqs.SendMessageAsync(config.QueueUrl, errMessage);
                 Console.WriteLine($"The message {errMessage.Value} has been sent");
                 
                 var httpMessage = new HttpMessage {Value = i};
-                sqs.SendMessageAsync(queueUrl, httpMessage);
+                sqs.SendMessageAsync(config.QueueUrl, httpMessage);
                 Console.WriteLine($"The message {httpMessage.Value} has been sent");
                 
                 var unkMessage = new UnknownMessage {Value = i};
-                sqs.SendMessageAsync(queueUrl, unkMessage);
+                sqs.SendMessageAsync(config.QueueUrl, unkMessage);
                 Console.WriteLine($"The message {unkMessage.Value} has been sent");
                 
                 var customRouteMessage = new CustomRouteMessage {Value = $"custom-route{i}"};
                 sns.PublishAsync(new PublishRequest
                 {
-                    TopicArn = topicArn,
+                    TopicArn = config.TopicArn,
                     Message = JsonSerializer.Serialize(customRouteMessage, new JsonSerializerOptions
                     {
                         WriteIndented = true,
@@ -104,17 +99,13 @@ namespace SqsPoller.Sample.Publisher
                 Console.WriteLine($"The message {customRouteMessage.Value} has been published");
             }
 
-            await sqs.CreateQueueAsync(config.SecondQueueName);
-            var secondQueueUrl = (await sqs.GetQueueUrlAsync(config.SecondQueueName)).QueueUrl;
             var barMessageForSecondQueue = new BarMessage {Value = "barSecondQueue"};
-            await sqs.SendMessageAsync(secondQueueUrl, barMessageForSecondQueue);
+            await sqs.SendMessageAsync(config.SecondQueueUrl, barMessageForSecondQueue);
             Console.WriteLine($"The message {barMessageForSecondQueue.Value} has been sent");
             
-            await sqs.CreateQueueAsync(config.ThirdQueueName);
-            var thirdQueueUrl = (await sqs.GetQueueUrlAsync(config.ThirdQueueName)).QueueUrl;
             var operationCancelledMessage = new OperationCancelledMessage();
-            await sqs.SendMessageAsync(thirdQueueUrl, operationCancelledMessage);
-            Console.WriteLine($"The message {barMessageForSecondQueue.Value} has been sent");
+            await sqs.SendMessageAsync(config.ThirdQueueUrl, operationCancelledMessage);
+            Console.WriteLine($"The message {operationCancelledMessage.Value} has been sent");
         }
     }
 }

@@ -51,7 +51,7 @@ namespace SqsPoller.Sample.Subscriber
                     services.AddSqsPoller(new SqsPollerConfig
                     {
                         ServiceUrl = config.ServiceUrl,
-                        QueueName = config.SecondQueueName,
+                        QueueUrl = config.SecondQueueUrl,
                         AccessKey = config.AccessKey,
                         SecretKey = config.SecretKey,
                         MaxNumberOfMessages = 10,
@@ -61,7 +61,7 @@ namespace SqsPoller.Sample.Subscriber
                     services.AddSqsPoller(new SqsPollerConfig
                     {
                         ServiceUrl = config.ServiceUrl,
-                        QueueName = config.ThirdQueueName,
+                        QueueUrl = config.ThirdQueueUrl,
                         AccessKey = config.AccessKey,
                         SecretKey = config.SecretKey,
                         MaxNumberOfMessages = 10,
