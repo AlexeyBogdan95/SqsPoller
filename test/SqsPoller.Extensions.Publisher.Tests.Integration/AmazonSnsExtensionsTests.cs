@@ -43,6 +43,9 @@ namespace SqsPoller.Extensions.Publisher.Tests.Integration
             //Act
             await snsClient.PublishAsync(topicArn, firstMessage);
             await snsClient.PublishAsync(topicArn, secondMessage);
+
+            await Task.Delay(1000);
+
             var response = await sqsClient.ReceiveMessageAsync(new ReceiveMessageRequest
             {
                 QueueUrl = queueUrl,
