@@ -79,6 +79,6 @@ namespace SqsPoller
         /// Gets and sets a custom exception handler when it is caught.
         /// Default log message is applied.
         /// </summary>
-        public Action<Exception, string>? OnException { get; set; }
+        public Action<ExceptionDetails>? OnException { get; set; }
     }
 }
