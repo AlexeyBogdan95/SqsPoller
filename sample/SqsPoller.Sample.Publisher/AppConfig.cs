@@ -12,9 +12,9 @@ namespace SqsPoller.Sample.Publisher
         public string ServiceUrl { get; set; } = string.Empty;
         public string AccessKey { get; set; } = string.Empty;
         public string SecretKey { get; set; } = string.Empty;
-        public string QueueName { get; set; } = string.Empty;
-        public string SecondQueueName { get; set; } = string.Empty;
-        public string ThirdQueueName { get; set; } = string.Empty;
-        public string TopicName { get; set; } = string.Empty;
+        public string QueueUrl { get; set; } = string.Empty;
+        public string SecondQueueUrl { get; set; } = string.Empty;
+        public string ThirdQueueUrl { get; set; } = string.Empty;
+        public string TopicArn { get; set; } = string.Empty;
     }
 }

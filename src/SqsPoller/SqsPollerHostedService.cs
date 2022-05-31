@@ -24,9 +24,9 @@ namespace SqsPoller
             ILogger<SqsPollerHostedService> logger)
         {
             _amazonSqsClient = amazonSqsClient;
-            _config = config;
             _consumerResolver = consumerResolver;
             _logger = logger;
+            _config = config;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -79,21 +79,51 @@ namespace SqsPoller
                 _logger.LogTrace("Message {message_id} {receipt_handle} has been handled");
 
                 _logger.LogTrace("Deleting the message with id {message_id} and ReceiptHandle {receipt_handle}");
-                _amazonSqsClient.DeleteMessageAsync(
-                    new DeleteMessageRequest
-                    {
-                        QueueUrl = queueUrl,
-                        ReceiptHandle = message.ReceiptHandle
-                    }, cancellationToken);
+                DeleteMessage(queueUrl, message, cancellationToken);
+                _logger.LogTrace("Message {message_id} {receipt_handle} has been deleted");
             }
             catch (Exception e)
             {
-                _logger.Log(_config.ExceptionDefaultMessageLogLevel, e, "Failed to handle message {message_id} {receipt_handle}");
-                _config.OnException?.Invoke(e);
+                if (_config.OnHandleMessageException is null)
+                {
+                    _logger.Log(_config.ExceptionDefaultMessageLogLevel, e, "Failed to handle message {message_id} {receipt_handle}");
+                }
+                else
+                {
+                    _config.OnHandleMessageException(e, message.MessageId);
+                }
             }
             finally
             {
                 semaphore.Release();
+            }
+        }
+
+        private async Task DeleteMessage(string queueUrl, Message message, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var deleteRequest = new DeleteMessageRequest
+                {
+                    QueueUrl = queueUrl,
+                    ReceiptHandle = message.ReceiptHandle
+                };
+
+                await _amazonSqsClient.DeleteMessageAsync(deleteRequest, cancellationToken);
+            }
+            catch (Exception e)
+            {
+                if (_config.OnDeleteMessageException is null)
+                {
+                    _logger.Log(
+                        _config.ExceptionDefaultMessageLogLevel,
+                        e,
+                        "Failed to delete message {message_id} {receipt_handle}");
+                }
+                else
+                {
+                    _config.OnDeleteMessageException(e, message.MessageId);
+                }
             }
         }
 
@@ -117,7 +147,15 @@ namespace SqsPoller
             }
             catch (Exception e)
             {
-                _logger.Log(_config.ExceptionDefaultMessageLogLevel, e, "Failed to receive messages from the queue"); ;
+                if (_config.OnGetMessagesException is null)
+                {
+                    _logger.Log(_config.ExceptionDefaultMessageLogLevel, e, "Failed to receive messages from the queue");
+                }
+                else
+                {
+                    _config.OnGetMessagesException(e);
+                }
+
                 return Enumerable.Empty<Message>();
             }
         }

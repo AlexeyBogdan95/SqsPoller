@@ -47,11 +47,11 @@ namespace SqsPoller.Sample.Subscriber
                         typeof(HttpConsumer),
                         typeof(ErrorConsumer)
                     });
-
+                    
                     services.AddSqsPoller(new SqsPollerConfig
                     {
                         ServiceUrl = config.ServiceUrl,
-                        QueueName = config.SecondQueueName,
+                        QueueUrl = config.SecondQueueUrl,
                         AccessKey = config.AccessKey,
                         SecretKey = config.SecretKey,
                         MaxNumberOfMessages = 10,
@@ -61,13 +61,17 @@ namespace SqsPoller.Sample.Subscriber
                     services.AddSqsPoller(new SqsPollerConfig
                     {
                         ServiceUrl = config.ServiceUrl,
-                        QueueName = config.ThirdQueueName,
+                        QueueUrl = config.ThirdQueueUrl,
                         AccessKey = config.AccessKey,
                         SecretKey = config.SecretKey,
                         MaxNumberOfMessages = 10,
                         MaxNumberOfParallelism = 1000,
                         ExceptionDefaultMessageLogLevel = LogLevel.Information,
-                        OnException = e => Log.Logger.Error(e, "OnException:")
+                        OnHandleMessageException = (exception, messageId) =>
+                        {
+                            Console.WriteLine(exception);
+                            Console.WriteLine($"MessageId: {messageId}");
+                        } 
                     }, new[] {typeof(OperationCancelledConsumer)});
                 })
                 .UseSerilog()
