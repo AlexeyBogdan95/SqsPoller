@@ -27,7 +27,6 @@ namespace SqsPoller
             _consumerResolver = consumerResolver;
             _logger = logger;
             _config = config;
-            _config.OnException ??= (details) => logger.Log(config.ExceptionDefaultMessageLogLevel, details.OriginalException, details.Message);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -80,41 +79,51 @@ namespace SqsPoller
                 _logger.LogTrace("Message {message_id} {receipt_handle} has been handled");
 
                 _logger.LogTrace("Deleting the message with id {message_id} and ReceiptHandle {receipt_handle}");
+                DeleteMessage(queueUrl, message, cancellationToken);
+                _logger.LogTrace("Message {message_id} {receipt_handle} has been deleted");
+            }
+            catch (Exception e)
+            {
+                if (_config.OnHandleMessageException is null)
+                {
+                    _logger.Log(_config.ExceptionDefaultMessageLogLevel, e, "Failed to handle message {message_id} {receipt_handle}");
+                }
+                else
+                {
+                    _config.OnHandleMessageException(e, message.MessageId);
+                }
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        private async Task DeleteMessage(string queueUrl, Message message, CancellationToken cancellationToken)
+        {
+            try
+            {
                 var deleteRequest = new DeleteMessageRequest
                 {
                     QueueUrl = queueUrl,
                     ReceiptHandle = message.ReceiptHandle
                 };
-                _amazonSqsClient.DeleteMessageAsync(deleteRequest, cancellationToken)
-                    .ContinueWith(deleteMessageTask =>
-                    {
-                        if (deleteMessageTask.IsFaulted)
-                        {
-                            _config.OnException?.Invoke(new ExceptionDetails()
-                                {
-                                    OriginalException = deleteMessageTask.Exception,
-                                    Message = $"Failed to delete message with id {message.MessageId} and ReceiptHandle {message.ReceiptHandle}",
-                                    Type = ExceptionType.Delete
-                                });
-                        }
-                        else
-                        {
-                            _logger.LogTrace("Message {message_id} {receipt_handle} has been deleted");
-                        }
-                    }, cancellationToken);
+
+                await _amazonSqsClient.DeleteMessageAsync(deleteRequest, cancellationToken);
             }
             catch (Exception e)
             {
-                _config.OnException?.Invoke(new ExceptionDetails()
+                if (_config.OnDeleteMessageException is null)
                 {
-                    OriginalException = e,
-                    Message = $"Failed to handle message {message.MessageId} {message.ReceiptHandle}",
-                    Type = ExceptionType.Handle
-                });
-            }
-            finally
-            {
-                semaphore.Release();
+                    _logger.Log(
+                        _config.ExceptionDefaultMessageLogLevel,
+                        e,
+                        "Failed to delete message {message_id} {receipt_handle}");
+                }
+                else
+                {
+                    _config.OnDeleteMessageException(e, message.MessageId);
+                }
             }
         }
 
@@ -138,12 +147,15 @@ namespace SqsPoller
             }
             catch (Exception e)
             {
-                _config.OnException?.Invoke(new ExceptionDetails()
+                if (_config.OnGetMessagesException is null)
                 {
-                    OriginalException = e,
-                    Message = "Failed to receive messages from the queue",
-                    Type = ExceptionType.Handle
-                });
+                    _logger.Log(_config.ExceptionDefaultMessageLogLevel, e, "Failed to receive messages from the queue");
+                }
+                else
+                {
+                    _config.OnGetMessagesException(e);
+                }
+
                 return Enumerable.Empty<Message>();
             }
         }

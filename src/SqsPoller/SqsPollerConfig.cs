@@ -76,9 +76,21 @@ namespace SqsPoller
         public LogLevel ExceptionDefaultMessageLogLevel { get; set; } = LogLevel.Error;
         
         /// <summary>
-        /// Gets and sets a custom exception handler when it is caught.
-        /// Default log message is applied.
+        /// (Optional) A custom exception handler that overrides HandleMessage default exception handler.
         /// </summary>
-        public Action<ExceptionDetails>? OnException { get; set; }
+        /// <returns>A callback with an exception and messageId</returns>
+        public Action<Exception, string>? OnHandleMessageException { get; set; }
+        
+        /// <summary>
+        /// (Optional) A custom exception handler that overrides DeleteMessage default exception handler.
+        /// </summary>
+        /// <returns>A callback with an exception and messageId</returns>
+        public Action<Exception, string>? OnDeleteMessageException { get; set; }
+        
+        /// <summary>
+        /// (Optional) A custom exception handler that overrides GetMessages default exception handler.
+        /// </summary>
+        /// <returns>A callback with an exception</returns>
+        public Action<Exception>? OnGetMessagesException { get; set; }
     }
 }

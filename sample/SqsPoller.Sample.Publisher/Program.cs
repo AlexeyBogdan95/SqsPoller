@@ -22,14 +22,14 @@ namespace SqsPoller.Sample.Publisher
                     .Build());
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddTransient<IAmazonSQS>(provider => new AmazonSQSClient(
+            serviceCollection.AddTransient<IAmazonSQS>(_ => new AmazonSQSClient(
                 config.AccessKey,
                 config.SecretKey,
                 new AmazonSQSConfig
                 {
                     ServiceURL = config.ServiceUrl
                 }));
-            serviceCollection.AddSingleton<IAmazonSimpleNotificationService>(provider =>
+            serviceCollection.AddSingleton<IAmazonSimpleNotificationService>(_ =>
                 new AmazonSimpleNotificationServiceClient(
                     config.AccessKey,
                     config.SecretKey,

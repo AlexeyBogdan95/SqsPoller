@@ -47,7 +47,7 @@ namespace SqsPoller.Sample.Subscriber
                         typeof(HttpConsumer),
                         typeof(ErrorConsumer)
                     });
-
+                    
                     services.AddSqsPoller(new SqsPollerConfig
                     {
                         ServiceUrl = config.ServiceUrl,
@@ -67,7 +67,11 @@ namespace SqsPoller.Sample.Subscriber
                         MaxNumberOfMessages = 10,
                         MaxNumberOfParallelism = 1000,
                         ExceptionDefaultMessageLogLevel = LogLevel.Information,
-                        OnException = (details) => Log.Logger.Error(details.OriginalException, details.Message)
+                        OnHandleMessageException = (exception, messageId) =>
+                        {
+                            Console.WriteLine(exception);
+                            Console.WriteLine($"MessageId: {messageId}");
+                        } 
                     }, new[] {typeof(OperationCancelledConsumer)});
                 })
                 .UseSerilog()

@@ -21,6 +21,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution items", "solution items", "{E2A4C7CB-756F-496D-85C1-292A3D885F90}"
 ProjectSection(SolutionItems) = preProject
 	docker-compose.yml = docker-compose.yml
+	build\localstack-init\04_create_second_poller_sqs.sh = build\localstack-init\04_create_second_poller_sqs.sh
+	build\localstack-init\03_create_poller_sns_subscription_into_poller_sqs.sh = build\localstack-init\03_create_poller_sns_subscription_into_poller_sqs.sh
+	build\localstack-init\02_create_poller_sqs.sh = build\localstack-init\02_create_poller_sqs.sh
+	build\localstack-init\01_create_poller_sns.sh = build\localstack-init\01_create_poller_sns.sh
+	build\localstack-init\05_create_third_poller_sqs.sh = build\localstack-init\05_create_third_poller_sqs.sh
 EndProjectSection
 EndProject
 Global
