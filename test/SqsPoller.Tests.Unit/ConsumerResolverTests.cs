@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NSubstitute;
@@ -21,7 +23,14 @@ namespace SqsPoller.Tests.Unit
             var firstConsumer = new FirstMessageConsumer(fakeService);
             var secondConsumer = new SecondMessageConsumer(fakeService);
             var consumers = new IConsumer[] {firstConsumer, secondConsumer};
-            var consumerResolver = new ConsumerResolver(consumers, fakeLogger);
+            var serviceCollection = new ServiceCollection();
+            foreach (var consumer in consumers)
+            {
+                serviceCollection.AddTransient(consumer.GetType(), _ => consumer);
+            }
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var types = consumers.Select(x => x.GetType()).ToArray();
+            var consumerResolver = new ConsumerResolver(serviceProvider, types, fakeLogger);
             var message = new FirstMessage {Value = "First Message"};
             var messageAsString = JsonConvert.SerializeObject(message);
             var messageType = nameof(FirstMessage);
@@ -51,7 +60,14 @@ namespace SqsPoller.Tests.Unit
             var firstConsumer = new FirstMessageConsumer(fakeService);
             var secondConsumer = new SecondMessageConsumer(fakeService);
             var consumers = new IConsumer[] {firstConsumer, secondConsumer};
-            var consumerResolver = new ConsumerResolver(consumers, fakeLogger);
+            var serviceCollection = new ServiceCollection();
+            foreach (var consumer in consumers)
+            {
+                serviceCollection.AddTransient(consumer.GetType(), _ => consumer);
+            }
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var types = consumers.Select(x => x.GetType()).ToArray();
+            var consumerResolver = new ConsumerResolver(serviceProvider, types, fakeLogger);
             var message = new SecondMessage {Value = "First Message"};
             var messageAsString = JsonConvert.SerializeObject(message);
             var messageType = nameof(SecondMessage);
@@ -81,7 +97,14 @@ namespace SqsPoller.Tests.Unit
             var firstConsumer = new FirstMessageConsumer(fakeService);
             var secondConsumer = new SecondMessageConsumer(fakeService);
             var consumers = new IConsumer[] {firstConsumer, secondConsumer};
-            var consumerResolver = new ConsumerResolver(consumers, fakeLogger);
+            var serviceCollection = new ServiceCollection();
+            foreach (var consumer in consumers)
+            {
+                serviceCollection.AddTransient(consumer.GetType(), _ => consumer);
+            }
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var types = consumers.Select(x => x.GetType()).ToArray();
+            var consumerResolver = new ConsumerResolver(serviceProvider, types, fakeLogger);
             var message = new SecondMessage {Value = "First Message"};
             var messageAsString = JsonConvert.SerializeObject(message);
             var messageType = "fakeMessageType";
@@ -109,7 +132,14 @@ namespace SqsPoller.Tests.Unit
             var fakeLogger = Substitute.For<ILogger<ConsumerResolver>>();
             var thirdConsumer = new ThirdMessageConsumer(fakeService);
             var consumers = new IConsumer[] {thirdConsumer};
-            var consumerResolver = new ConsumerResolver(consumers, fakeLogger);
+            var serviceCollection = new ServiceCollection();
+            foreach (var consumer in consumers)
+            {
+                serviceCollection.AddTransient(consumer.GetType(), _ => consumer);
+            }
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var types = consumers.Select(x => x.GetType()).ToArray();
+            var consumerResolver = new ConsumerResolver(serviceProvider, types, fakeLogger);
             var firstMessage = new FirstMessage {Value = "First Message"};
             var firstSqsMessage = new Message
             {
@@ -149,7 +179,14 @@ namespace SqsPoller.Tests.Unit
             var secondConsumer = new SecondMessageConsumer(fakeService);
             var thirdConsumer = new ThirdMessageConsumer(fakeService);
             var consumers = new IConsumer[] {firstConsumer, secondConsumer, thirdConsumer};
-            var consumerResolver = new ConsumerResolver(consumers, fakeLogger);
+            var serviceCollection = new ServiceCollection();
+            foreach (var consumer in consumers)
+            {
+                serviceCollection.AddTransient(consumer.GetType(), _ => consumer);
+            }
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var types = consumers.Select(x => x.GetType()).ToArray();
+            var consumerResolver = new ConsumerResolver(serviceProvider, types, fakeLogger);
             var firstMessage = new FirstMessage {Value = "First Message"};
             var firstSqsMessage = new Message
             {
@@ -188,7 +225,14 @@ namespace SqsPoller.Tests.Unit
             var firstConsumer = new FirstMessageConsumer(fakeService);
             var secondConsumer = new SecondMessageConsumer(fakeService);
             var consumers = new IConsumer[] {firstConsumer, secondConsumer};
-            var consumerResolver = new ConsumerResolver(consumers, fakeLogger);
+            var serviceCollection = new ServiceCollection();
+            foreach (var consumer in consumers)
+            {
+                serviceCollection.AddTransient(consumer.GetType(), _ => consumer);
+            }
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var types = consumers.Select(x => x.GetType()).ToArray();
+            var consumerResolver = new ConsumerResolver(serviceProvider, types, fakeLogger);
             var message = new FirstMessage {Value = "First Message"};
             var messageAsString = JsonConvert.SerializeObject(message);
             var messageType = nameof(FirstMessage);

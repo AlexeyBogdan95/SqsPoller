@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace SqsPoller
@@ -13,21 +14,21 @@ namespace SqsPoller
 
     public class ConsumerResolver: IConsumerResolver
     {
-        private readonly IEnumerable<(IConsumer instance, Type messageType, SqsConsumer mapping)> _consumersMapping;
+        private readonly IEnumerable<(Type consumerType, Type messageType, SqsConsumer mapping)> _consumersMapping;
+        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ConsumerResolver> _logger;
         private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
 
-        public ConsumerResolver(IEnumerable<IConsumer> consumers,
+        public ConsumerResolver(IServiceProvider serviceProvider, IEnumerable<Type> consumers,
             ILogger<ConsumerResolver> logger)
         {
+            _serviceProvider = serviceProvider;
             _logger = logger;
-            _consumersMapping = consumers.SelectMany(c =>
+            _consumersMapping = consumers.SelectMany(type =>
                 {
-                    var type = c.GetType();
-
                     var messageTypes = type.GetInterfaces()
                         .Where(t => t.IsGenericType)
                         .Where(t => t.GetGenericTypeDefinition() == typeof(IConsumer<>))
@@ -44,10 +45,10 @@ namespace SqsPoller
 
                     if (consumer != null)
                     {
-                        return messageTypes.Select(t => (c, t, consumer));
+                        return messageTypes.Select(t => (type, t, consumer));
                     }
 
-                    return messageTypes.Select(t => (c, t, new SqsConsumer
+                    return messageTypes.Select(t => (type, t, new SqsConsumer
                     {
                         Value = t.Name,
                         MessageAttribute = "MessageType"
@@ -90,14 +91,15 @@ namespace SqsPoller
                     cancellationToken
                 };
 
-                await (Task) consumerMapping.instance.GetType().GetMethod(
+                var instance = _serviceProvider.GetRequiredService(consumerMapping.consumerType);
+                await (Task) instance.GetType().GetMethod(
                         "Consume",
                         BindingFlags.Public | BindingFlags.Instance,
                         null,
                         CallingConventions.Any,
                         new [] {consumerMapping.messageType, typeof(CancellationToken)},
-                        null)
-                    .Invoke(consumerMapping.instance, @params);
+                        null)!
+                    .Invoke(instance, @params);
                 consumerNotFound = false;
             }
 
