@@ -13,13 +13,11 @@ namespace SqsPoller
         public static IServiceCollection AddSqsPoller(
             this IServiceCollection services, SqsPollerConfig config, Type[] types)
         {
-            services.AddSingleton<IConsumerResolver, ConsumerResolver>();
-
             foreach (var type in types)
             {
-                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IConsumer), type));
+                services.TryAdd(ServiceDescriptor.Singleton(type, type));
             }
-            
+
             services.AddTransient<IHostedService>(provider =>
             {
                 AmazonSQSClient sqsClient;
@@ -34,10 +32,11 @@ namespace SqsPoller
                     sqsClient = new AmazonSQSClient(CreateSqsConfig(config));
                 }
 
+                var consumerResolver = new ConsumerResolver(provider, types, provider.GetRequiredService<ILogger<ConsumerResolver>>());
                 return new SqsPollerHostedService(
                     sqsClient,
                     config,
-                    provider.GetRequiredService<IConsumerResolver>(),
+                    consumerResolver,
                     provider.GetRequiredService<ILogger<SqsPollerHostedService>>());
             });
 
