@@ -4,5 +4,6 @@ namespace SqsPoller.Tests.Unit
     {
         void FirstMethod(string value);
         void SecondMethod(string value);
+        void EnumMethod(SampleEnum value);
     }
 }
