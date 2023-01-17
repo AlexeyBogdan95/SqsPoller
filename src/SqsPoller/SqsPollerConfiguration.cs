@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using Amazon;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +12,7 @@ namespace SqsPoller
     public static class SqsPollerConfiguration
     {
         public static IServiceCollection AddSqsPoller(
-            this IServiceCollection services, SqsPollerConfig config, Type[] types)
+            this IServiceCollection services, SqsPollerConfig config, Type[] types, JsonConverter? jsonConverter = default)
         {
             foreach (var type in types)
             {
@@ -32,7 +33,12 @@ namespace SqsPoller
                     sqsClient = new AmazonSQSClient(CreateSqsConfig(config));
                 }
 
-                var consumerResolver = new ConsumerResolver(provider, types, provider.GetRequiredService<ILogger<ConsumerResolver>>());
+                var consumerResolver = new ConsumerResolver(
+                    provider,
+                    types,
+                    provider.GetRequiredService<ILogger<ConsumerResolver>>(),
+                    jsonConverter);
+
                 return new SqsPollerHostedService(
                     sqsClient,
                     config,

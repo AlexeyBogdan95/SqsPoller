@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS.Model;
@@ -17,13 +18,10 @@ namespace SqsPoller
         private readonly IEnumerable<(Type consumerType, Type messageType, SqsConsumer mapping)> _consumersMapping;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ConsumerResolver> _logger;
-        private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
+        private readonly JsonSerializerOptions _options;
 
         public ConsumerResolver(IServiceProvider serviceProvider, IEnumerable<Type> consumers,
-            ILogger<ConsumerResolver> logger)
+            ILogger<ConsumerResolver> logger, JsonConverter? jsonConverter = default)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
@@ -54,6 +52,10 @@ namespace SqsPoller
                         MessageAttribute = "MessageType"
                     }));
                 });
+
+            _options = jsonConverter == default
+                ? new JsonSerializerOptions { PropertyNameCaseInsensitive = true, }
+                : new JsonSerializerOptions { PropertyNameCaseInsensitive = true, Converters = { jsonConverter } };
         }
 
         public async Task Resolve(Message message, CancellationToken cancellationToken)

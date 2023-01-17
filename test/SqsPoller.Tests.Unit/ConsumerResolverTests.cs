@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS.Model;
@@ -251,6 +253,112 @@ namespace SqsPoller.Tests.Unit
             //Assert
             fakeService.Received(1).FirstMethod(message.Value);
             fakeService.DidNotReceive().SecondMethod(string.Empty);
+        }
+
+        [Fact]
+        public async Task Resolve_ConsumerFound_HandleEnumAsString()
+        {
+            //Arrange
+            var fakeService = Substitute.For<IFakeService>();
+            var fakeLogger = Substitute.For<ILogger<ConsumerResolver>>();
+            var enumConsumer = new EnumMessageConsumer(fakeService);
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient(enumConsumer.GetType(), _ => enumConsumer);
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var types = new [] { enumConsumer.GetType() };
+            var jsonConverter = new JsonStringEnumConverter(JsonNamingPolicy.CamelCase);
+            var consumerResolver = new ConsumerResolver(serviceProvider, types, fakeLogger, jsonConverter);
+            var message = new EnumMessage { Value = SampleEnum.Value };
+            var jsonSerializerOptions = new JsonSerializerOptions
+            {
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            };
+            var messageAsString = System.Text.Json.JsonSerializer.Serialize(message, jsonSerializerOptions);
+            var messageType = nameof(EnumMessage);
+            var sqsMessage = new Message
+            {
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {"MessageType", new MessageAttributeValue {StringValue = messageType}}
+                },
+                Body = messageAsString
+            };
+
+            //Act
+            await consumerResolver.Resolve(sqsMessage, CancellationToken.None);
+
+            //Assert
+            fakeService.Received(1).EnumMethod(message.Value);
+        }
+
+        [Fact]
+        public async Task Resolve_ConsumerFound_ExpectExceptionEnumAsString()
+        {
+            //Arrange
+            var fakeService = Substitute.For<IFakeService>();
+            var fakeLogger = Substitute.For<ILogger<ConsumerResolver>>();
+            var enumConsumer = new EnumMessageConsumer(fakeService);
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient(enumConsumer.GetType(), _ => enumConsumer);
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var types = new [] { enumConsumer.GetType() };
+            var consumerResolver = new ConsumerResolver(serviceProvider, types, fakeLogger);
+            var message = new EnumMessage { Value = SampleEnum.Value };
+            var jsonSerializerOptions = new JsonSerializerOptions
+            {
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            };
+            var messageAsString = System.Text.Json.JsonSerializer.Serialize(message, jsonSerializerOptions);
+            var messageType = nameof(EnumMessage);
+            var sqsMessage = new Message
+            {
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {"MessageType", new MessageAttributeValue {StringValue = messageType}}
+                },
+                Body = messageAsString
+            };
+
+            //Act
+            var act = async () => await consumerResolver.Resolve(sqsMessage, CancellationToken.None);
+
+            //Assert
+            await act.ShouldThrowAsync<System.Text.Json.JsonException>();
+        }
+
+        [Fact]
+        public async Task Resolve_ConsumerFound_HandleEnumAsNumber()
+        {
+            //Arrange
+            var fakeService = Substitute.For<IFakeService>();
+            var fakeLogger = Substitute.For<ILogger<ConsumerResolver>>();
+            var enumConsumer = new EnumMessageConsumer(fakeService);
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient(enumConsumer.GetType(), _ => enumConsumer);
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var types = new [] { enumConsumer.GetType() };
+            var consumerResolver = new ConsumerResolver(serviceProvider, types, fakeLogger);
+            var message = new EnumMessage { Value = SampleEnum.Value };
+            var messageAsString = System.Text.Json.JsonSerializer.Serialize(message);
+
+            var messageType = nameof(EnumMessage);
+            var sqsMessage = new Message
+            {
+                MessageAttributes = new Dictionary<string, MessageAttributeValue>
+                {
+                    {"MessageType", new MessageAttributeValue {StringValue = messageType}}
+                },
+                Body = messageAsString
+            };
+
+            //Act
+            await consumerResolver.Resolve(sqsMessage, CancellationToken.None);
+
+            //Assert
+            fakeService.Received(1).EnumMethod(message.Value);
         }
     }
 }
