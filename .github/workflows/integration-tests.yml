@@ -17,6 +17,6 @@ jobs:
         with:
           dotnet-version: 9.0.x
       - name: Run docker-compose
-        run: docker-compose up -d
+        run: docker compose up -d
       - name: Run Integration Tests
         run: dotnet test ./test/SqsPoller.Extensions.Publisher.Tests.Integration/SqsPoller.Extensions.Publisher.Tests.Integration.csproj
