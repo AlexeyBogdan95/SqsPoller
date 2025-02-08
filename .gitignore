@@ -18,6 +18,7 @@
 .idea/
 .DS_Store
 .DS_Store/
+volume/
 
 # Build results
 [Dd]ebug/

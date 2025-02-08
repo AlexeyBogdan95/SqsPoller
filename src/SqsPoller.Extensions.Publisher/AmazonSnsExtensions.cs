@@ -8,7 +8,7 @@ namespace SqsPoller.Extensions.Publisher
 {
     public static class AmazonSnsExtensions
     {
-        private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions Options = new()
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -20,7 +20,7 @@ namespace SqsPoller.Extensions.Publisher
             return client.PublishAsync(new PublishRequest
             {
                 TopicArn = topicArn,
-                Message = JsonSerializer.Serialize(message, _options),
+                Message = JsonSerializer.Serialize(message, Options),
                 MessageAttributes = new Dictionary<string, MessageAttributeValue>
                 {
                     {
@@ -49,7 +49,7 @@ namespace SqsPoller.Extensions.Publisher
             return client.PublishAsync(new PublishRequest
             {
                 TopicArn = topicArn,
-                Message = JsonSerializer.Serialize(message, _options),
+                Message = JsonSerializer.Serialize(message, Options),
                 MessageAttributes = messageAttributes
             });
         }

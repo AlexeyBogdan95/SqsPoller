@@ -1,30 +1,38 @@
-version: '3.7'
-
 services:
   localstack:
-    image: localstack/localstack:0.14.1
-    container_name: sqs-poller-locastack-aws
-    healthcheck:
-      test:
-        - CMD
-        - bash
-        - -c
-        - awslocal sqs get-queue-url --queue-name ThirdSqsPollerQueue
-      interval: 1s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+    image: localstack/localstack:latest
+    container_name: sqs-poller-localstack
     environment:
       - SERVICES=sqs,sns
       - AWS_ACCESS_KEY_ID=1
       - AWS_SECRET_ACCESS_KEY=1
       - AWS_DEFAULT_REGION=us-east-1
-      - DATA_DIR=/tmp/localstack/data
-      - LEGACY_PERSISTENCE=0
-      - LS_LOG=error
     ports:
-      - 4566:4566
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    volumes: 
-      - ./build/localstack-init:/docker-entrypoint-initaws.d
+      - "4566:4566"
+    volumes:
+      - sqs-poller-local:/tmp/sqs-poller-local
+
+  aws-cli:
+    image: amazon/aws-cli:2.17.13
+    container_name: sqs-poller-aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID: "X"
+      AWS_SECRET_ACCESS_KEY: "X"
+      AWS_DEFAULT_REGION: "us-east-1"
+    depends_on:
+      localstack:
+        condition: service_healthy
+    entrypoint: /bin/sh -c
+    command: >
+      "
+        aws --endpoint-url=http://localstack:4566 sns create-topic --name SqsPollerTopic &&
+        aws --endpoint-url=http://localstack:4566 sqs create-queue --queue-name SqsPollerQueue &&
+        aws --endpoint-url=http://localstack:4566 sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:SqsPollerTopic --protocol sqs --notification-endpoint arn:aws:sqs:us-east-1:000000000000:SqsPollerQueue &&
+        aws --endpoint-url=http://localstack:4566 sqs create-queue --queue-name SecondSqsPollerQueue && 
+        aws --endpoint-url=http://localstack:4566 sqs create-queue --queue-name ThirdSqsPollerQueue
+      "
+    volumes:
+      - sqs-poller-local:/tmp/sqs-poller-local
+
+volumes:
+  sqs-poller-local:

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS;
@@ -156,7 +155,7 @@ namespace SqsPoller
                     _config.OnGetMessagesException(e);
                 }
 
-                return Enumerable.Empty<Message>();
+                return [];
             }
         }
     }
