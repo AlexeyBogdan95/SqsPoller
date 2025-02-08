@@ -33,7 +33,7 @@ namespace SqsPoller.Extensions.Publisher
                         "MessageType", new MessageAttribute
                         {
                             Type = "String",
-                            Value = message?.GetType().Name
+                            Value = message!.GetType().Name
                         }
                     }
                 }

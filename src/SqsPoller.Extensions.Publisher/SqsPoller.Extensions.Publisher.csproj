@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>SqsPoller.Extensions.Publisher</PackageId>
-        <Version>2.0.1$(VersionSuffix)</Version>
+        <Version>3.0.0$(VersionSuffix)</Version>
         <Authors>Alexey Bogdan</Authors>
         <Company>Alexey Bogdan</Company>
         <Description>A small library that helps ASP.NET Core applications easily consume messages from a SQS queue</Description>
@@ -12,12 +11,14 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.3.7" />
-      <PackageReference Include="AWSSDK.SQS" Version="3.7.2.4" />
-      <PackageReference Include="System.Text.Json" Version="6.0.1" />
+      <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.400.91" />
+      <PackageReference Include="AWSSDK.SQS" Version="3.7.400.91" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+      <PackageReference Include="System.Text.Json" Version="8.0.5" />
     </ItemGroup>
 
 </Project>
