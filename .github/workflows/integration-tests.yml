@@ -15,7 +15,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.000
+          dotnet-version: 9.0.x
       - name: Run docker-compose
         run: docker-compose up -d
       - name: Run Integration Tests
