@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using Amazon;
+using Amazon.Runtime;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -27,6 +28,11 @@ namespace SqsPoller
                 {
                     sqsClient = new AmazonSQSClient(
                         config.AccessKey, config.SecretKey, CreateSqsConfig(config));
+                }
+                else if (config.UseWebIdentityCredentialsFromEnvironmentVariables)
+                {
+                    var credentials = (AWSCredentials) AssumeRoleWithWebIdentityCredentials.FromEnvironmentVariables();
+                    sqsClient = new AmazonSQSClient(credentials, CreateSqsConfig(config));
                 }
                 else
                 {

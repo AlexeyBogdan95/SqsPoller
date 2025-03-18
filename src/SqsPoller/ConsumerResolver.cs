@@ -99,7 +99,7 @@ namespace SqsPoller
                         BindingFlags.Public | BindingFlags.Instance,
                         null,
                         CallingConventions.Any,
-                        new [] {consumerMapping.messageType, typeof(CancellationToken)},
+                        [consumerMapping.messageType, typeof(CancellationToken)],
                         null)!
                     .Invoke(instance, @params);
                 consumerNotFound = false;

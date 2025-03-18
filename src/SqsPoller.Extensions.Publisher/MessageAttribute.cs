@@ -6,8 +6,7 @@ namespace SqsPoller.Extensions.Publisher
     internal class MessageBody
     {
         public string Message { get; set; } = string.Empty;
-        public Dictionary<string, MessageAttribute> MessageAttributes { get; set; }
-            = new Dictionary<string, MessageAttribute>();
+        public Dictionary<string, MessageAttribute> MessageAttributes { get; set; } = new();
         public DateTime TimeStamp { get; set; }
     }
 

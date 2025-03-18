@@ -39,6 +39,10 @@ namespace SqsPoller
         /// </summary>
         public string SecretKey { get; set; } = string.Empty;
 
+        /// <summary>Whether WebIdentityCredentials should be used for AmazonSqsClient</summary>
+        /// <example>false</example>
+        public bool UseWebIdentityCredentialsFromEnvironmentVariables { get; set; } = false;
+
         /// <summary>
         /// Gets and sets the property WaitTimeSeconds (default 20).
         /// <para>

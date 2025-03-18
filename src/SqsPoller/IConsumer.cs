@@ -9,9 +9,7 @@ namespace SqsPoller
     /// <remarks>
     /// Please don't use it
     /// </remarks>
-    public interface IConsumer
-    {
-    }
+    public interface IConsumer;
     
     public interface IConsumer<in T>: IConsumer
     {
