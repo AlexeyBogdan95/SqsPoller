@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageId>SqsPoller</PackageId>
-        <Version>3.0.0$(VersionSuffix)</Version>
+        <Version>4.0.0$(VersionSuffix)</Version>
         <Authors>Alexey Bogdan</Authors>
         <Company>Alexey Bogdan</Company>
         <Description>A small library that helps ASP.NET Core applications easily consume messages from a SQS queue</Description>
@@ -11,7 +11,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -23,10 +23,10 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="AWSSDK.SQS" Version="3.7.400.91" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
-        <PackageReference Include="System.Text.Json" Version="8.0.5" />
+        <PackageReference Include="AWSSDK.SQS" Version="4.0.0.2" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
+        <PackageReference Include="System.Text.Json" Version="9.0.4" />
     </ItemGroup>
 
 </Project>
