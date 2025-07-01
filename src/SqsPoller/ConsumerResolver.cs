@@ -63,7 +63,7 @@ namespace SqsPoller
             bool consumerNotFound = true;
             foreach (var consumerMapping in _consumersMapping)
             {
-                var messageType = message.MessageAttributes
+                var messageType = message.MessageAttributes?
                     .FirstOrDefault(pair => pair.Key == consumerMapping.mapping.MessageAttribute)
                     .Value?.StringValue;
 
