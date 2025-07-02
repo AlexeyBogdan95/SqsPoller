@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageId>SqsPoller</PackageId>
-        <Version>4.0.1$(VersionSuffix)</Version>
+        <Version>4.0.2$(VersionSuffix)</Version>
         <Authors>Alexey Bogdan</Authors>
         <Company>Alexey Bogdan</Company>
         <Description>A small library that helps ASP.NET Core applications easily consume messages from a SQS queue</Description>

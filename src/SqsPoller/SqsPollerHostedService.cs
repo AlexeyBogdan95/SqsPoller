@@ -140,9 +140,9 @@ namespace SqsPoller
                         QueueUrl = queueUrl
                     }, cancellationToken);
 
-                var messagesCount = result.Messages.Count;
+                var messagesCount = result.Messages?.Count ?? 0;
                 _logger.LogTrace("{count} messages received", messagesCount);
-                return result.Messages;
+                return result.Messages ?? [];
             }
             catch (Exception e)
             {
